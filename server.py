@@ -20,7 +20,12 @@ except AttributeError:
 
 @app.route("/")
 def index():
-	return "<p>Hello, World!</p>"
+	admin = False
+	if isAdmin():
+		admin = True
+		if not isValidOTP():
+			return redirect(url_for('otp'))
+	return render_template('index.html', admin=admin)
 
 @app.route("/qrcode", methods=["GET"])
 def get_qrcode():
@@ -28,12 +33,23 @@ def get_qrcode():
     data = request.args.get("data", "")
     return send_file(qrcode(data, mode="raw"), mimetype="image/png")
 
-@app.route('/topup')
+@app.route('/topup', methods=['GET','POST'])
 def topup():
-	value = 5
-	code = db.generateTopUp(value)
-	print(code)
-	return f'<img src="/qrcode?data=' + code + '">'
+	if not isAdmin():
+		return redirect(url_for('login'))
+	if not isValidOTP():
+		return redirect(url_for('otp'))
+	code = None
+	value = 0
+	if request.method == 'POST':
+		try:
+			value = int(request.form['value'])
+			if value <= 0:
+				raise Exception('Less than zero')
+			code = db.generateTopUp(value)
+		except Exception as e:
+			pass
+	return render_template('topup.html', code=code, value=value, codes=[], totalvalue=0)
 
 @app.route('/otp', methods=['GET','POST'])
 def otp():
@@ -46,10 +62,13 @@ def otp():
 			return redirect(url_for('index'))
 		if request.method == 'POST':
 			totp = pyotp.TOTP(secret)
-			if totp.verify(request.form['otp']):
-				session['otp'] = True
-				db.setOTPverified(session['username'])
-				return redirect(url_for('index'))
+			try:
+				if totp.verify(request.form['otp']):
+					session['otp'] = True
+					db.setOTPverified(session['username'])
+					return redirect(url_for('index'))
+			except Exception as e:
+				print(e)
 		if not db.isOTPverified(session['username']):
 			secret = db.getOTPSecret(session['username'])
 			code = pyotp.totp.TOTP(secret).provisioning_uri(name=session['username'], issuer_name=domain)
@@ -68,6 +87,10 @@ def isAdmin():
 
 @app.route('/login', methods=['GET','POST'])
 def login():
+	if isAdmin():
+		if not isValidOTP():
+			return redirect(url_for('otp'))
+		return redirect(url_for('index'))
 	if request.method == 'POST':
 		session['username'] = 'sndstrm'
 		return redirect(url_for('otp'))
@@ -80,11 +103,13 @@ def logout():
 
 @app.route('/cards')
 def page_cards():
-	if isAdmin():
-		value = db.getBalance()
-		cards = db.getCards()
-		return render_template('cards.html', totalvalue=value, cards=cards)
-	return redirect(url_for('login'))
+	if not isAdmin():
+		return redirect(url_for('login'))
+	if not isValidOTP():
+		return redirect(url_for('otp'))
+	value = db.getBalance()
+	cards = db.getCards()
+	return render_template('cards.html', totalvalue=value, cards=cards)
 
 @app.route('/products')
 def page_products():

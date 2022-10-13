@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Aufladecode{% endblock%}
+{% block content %}
+
+{% if code %}
+
+  <img src="/qrcode?data={{code}}" />
+  Gegenwert: {{value}} 
+
+{% endif %}
+
+<form action="/topup" method="POST">
+  <div class="row">
+    <div class="col"><input type="submit" name="Aufladen" /></div>
+    <div class="col"><input type="number" name="value" /></div>
+  </div>
+</form>
+
+  <div class="row">
+    <div class="col"><strong>Bisher noch nicht aufgeladen:</strong></div>
+    <div class="col">{{totalvalue}}</div>
+  </div>
+
+{% for code in codes %}
+  <div class="row">
+    <div class="col">{{code.hash}}</div>
+    <div class="col">{{code.value}}</div>
+  </div>
+{% endfor %}
+{% endblock%}
