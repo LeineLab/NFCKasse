@@ -1,5 +1,5 @@
 
-cp ./ /opt/
+cp ./ /opt/kasse
 cp nfckasse.service /etc/systemd/system/
 systremctl enable nfckasse.service
 cd /opt/kasse
