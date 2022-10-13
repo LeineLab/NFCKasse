@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}OTP Config{% endblock%}
+{% block content %}
+
+<form action="/otp" method="post">
+{% if code is defined %}
+  <div class="row">
+    <div class="col"><a href="{{url}}"><img src=/qrcode?data={{code}}" /></a></div>
+    <div class="col"><input type="text" name="username" /></div>
+  </div>
+{% endif %}
+{% if error %}
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">OTP Token falsch/abgelaufen</div>
+  </div>
+{% endif %}
+  <div class="row">
+    <div class="col">OTP:</div>
+    <div class="col"><input type="text" name="otp" autocomplete="one-time-code" autofocus /></div>
+  </div>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col"><input type="submit" name="Verifizieren" /></div>
+  </div>
+</form>
+
+{% endblock%}

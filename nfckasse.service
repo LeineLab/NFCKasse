@@ -1,0 +1,13 @@
+[Unit]
+Description=Kassenserver
+After=network.target mariadb.service
+
+[Service]
+ExecStart=/opt/kasse/kasse.py
+Restart=on-failure
+RestartPreventExitStatus=255
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+Alias=nfckasse.service

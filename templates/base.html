@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+	{% block head %}
+	<title>{% block title %}{% endblock %} - NFC Kasse</title>
+	<link rel="stylesheet" type="text/css" href="/css/style.css"
+	{% endblock %}
+</head>
+<body>
+	<div id="content">{% block content %}{% endblock %}</div>
+	<footer>
+		&copy; 2022 Created by <a href="https://sndstrm.de">Luca Zimmermann</a> / <a href="https://leinelab.org">LeineLab</a>
+	</footer>
+</body>
+</html>

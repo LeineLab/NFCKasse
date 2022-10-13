@@ -1,0 +1,9 @@
+
+adafruit-circuitpython-rgb-display
+mysql-connector-python
+pn532pi
+pyserial
+Pillow
+flask
+Flask-QRcode
+pyotp

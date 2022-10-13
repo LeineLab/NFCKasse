@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}NFC Karten{% endblock%}
+{% block content %}
+
+  <div class="card">
+    <div class="cardhash"><strong>Gesamtguthaben</strong></div>
+    <div class="cardvalue">{{totalvalue}}</div>
+  </div>
+
+{% for card in cards %}
+  <div class="card">
+    <div class="cardhash">{{card.uid}}</div>
+    <div class="cardvalue">{{card.value}}</div>
+  </div>
+{% endfor %}
+{% endblock%}
