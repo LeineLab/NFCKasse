@@ -3,10 +3,22 @@
 <head>
 	{% block head %}
 	<title>{% block title %}{% endblock %} - NFC Kasse</title>
-	<link rel="stylesheet" type="text/css" href="/css/style.css"
+	<link rel="stylesheet" type="text/css" href="/css/style.css">
 	{% endblock %}
 </head>
 <body>
+	<header>
+		<a href="/">Start</a>
+		<a href="/products">Produkte</a>
+{% if admin %}
+		<a href="/cards">Karten</a>
+		<a href="/topup">Aufladen</a>
+		<a href="/admin">Admin</a>
+		<a href="/logout">Logout</a>
+{% else %}
+		<a href="/login">Login</a>
+{% endif %}
+	</header>
 	<div id="content">{% block content %}{% endblock %}</div>
 	<footer>
 		&copy; 2022 Created by <a href="https://sndstrm.de">Luca Zimmermann</a> / <a href="https://leinelab.org">LeineLab</a>

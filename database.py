@@ -1,5 +1,6 @@
 import mysql.connector
 import uuid
+import bcrypt
 
 class Database:
 	def __init__(self, **kwargs):
@@ -12,11 +13,29 @@ class Database:
 		#self.db.autocommit = True
 		self.cursor = self.db.cursor(dictionary=True)
 
-	def checkAdmin(self, name):
+	def isAdmin(self, name):
 		self.cursor.execute('SELECT username FROM admins WHERE username = %s', (name, ))
 		try:
 			result = self.cursor.fetchone()
 			return True
+		except mysql.connector.Error as error:
+			return False
+
+	def checkAdmin(self, name, password):
+		self.cursor.execute('SELECT password FROM admins WHERE username = %s', (name, ))
+		try:
+			result = self.cursor.fetchone()
+			return bcrypt.checkpw(password.encode('utf-8'), result['password'].encode('utf-8'))
+		except mysql.connector.Error as error:
+			return False
+
+	def addAdmin(self, name, password):
+		try:
+			salt = bcrypt.gensalt()
+			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
+			self.cursor.execute('INSERT INTO admins (username, password) VALUES (%s, %s)', (name, hash))
+			self.db.commit()
+			return true
 		except mysql.connector.Error as error:
 			return False
 
@@ -110,6 +129,15 @@ class Database:
 			return 0
 		return 0
 
+	def getTopupBalance(self):
+		try:
+			self.cursor.execute('SELECT SUM(value) as totalvalue FROM topups WHERE used=0')
+			result = self.cursor.fetchone()
+			return result['totalvalue']
+		except mysql.connector.Error as error:
+			return 0
+		return 0
+
 	def generateTopUp(self, amount):
 		try:
 			code = uuid.uuid4().hex
@@ -124,7 +152,7 @@ class Database:
 		try:
 			self.cursor.execute('SELECT value, used FROM topups WHERE code = %s', (code, ))
 			result = self.cursor.fetchone()
-			return result[0], result[1]
+			return result['value'], result['used']
 		except TypeError:
 			return None, None
 
@@ -156,9 +184,9 @@ class Database:
 			return False
 		return self.cursor.rowcount != 0
 
-	def reduceProductStock(self, ean, amount):
+	def changeProductStock(self, ean, amount):
 		try:
-			self.cursor.execute('UPDATE products SET stock = stock + (%s) WHERE ean = %s', (-amount, ean))
+			self.cursor.execute('UPDATE products SET stock = stock + (%s) WHERE ean = %s', (amount, ean))
 			self.db.commit()
 			return self.cursor.rowcount != 0
 		except mysql.connector.errors.DataError:
@@ -170,9 +198,18 @@ class Database:
 			result = self.cursor.fetchone()
 			price = result['price']
 			self.cursor.execute('UPDATE cards SET value = value - %s WHERE uid = %s', (price, cardhash))
-			self.cursor.execute('UPDATE products SET amount = amount - 1 WHERE ean = %s', (ean, ))
+			self.cursor.execute('UPDATE products SET stock = stock - 1 WHERE ean = %s', (ean, ))
 			self.db.commit()
 			return True
 		except mysql.connector.errors.DataError:
 			self.db.rollback()
 		return False
+
+	def addProduct(self, ean, name, price, stock):
+		try:
+			self.cursor.execute('INSERT INTO products (ean, name, price, stock) VALUES (%s, %s, %s, %s)', (ean, name, price, stock))
+			self.db.commit()
+			return True
+		except mysql.connector.Error as error:
+			print(error)
+			return False

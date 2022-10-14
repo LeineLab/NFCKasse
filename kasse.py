@@ -134,8 +134,9 @@ def ui():
 				ret = buttonLoop(10)
 				if ret == 1:
 					if price <= value:
-						print(db.changeCardValue(uid, -price))
-						print(db.reduceProductStock(bc, 1))
+						db.buyProduct(uid, bc)
+						#print(db.changeCardValue(uid, -price))
+						#print(db.reduceProductStock(bc, 1))
 						value = db.getCard(uid)
 						led.green()
 						disp.showScanMore()

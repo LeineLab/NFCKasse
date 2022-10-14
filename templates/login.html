@@ -2,18 +2,21 @@
 {% block title %}Login{% endblock%}
 {% block content %}
 
-<form action="/login" method="post">
+{% if error %}
+Benutzername oder Passwort falsch.
+{% endif %}
+<form action="/login" method="post" class="table">
   <div class="row">
     <div class="col">Name</div>
     <div class="col"><input type="text" name="username" /></div>
   </div>
   <div class="row">
-    <div class="col">Name</div>
+    <div class="col">Passwort</div>
     <div class="col"><input type="password" name="password" /></div>
   </div>
   <div class="row">
     <div class="col"></div>
-    <div class="col"><input type="submit" name="Login" /></div>
+    <div class="col"><input type="submit" value="Login" /></div>
   </div>
 </form>
 

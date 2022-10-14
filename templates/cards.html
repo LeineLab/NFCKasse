@@ -2,6 +2,7 @@
 {% block title %}NFC Karten{% endblock%}
 {% block content %}
 
+<div class="table">
   <div class="card">
     <div class="cardhash"><strong>Gesamtguthaben</strong></div>
     <div class="cardvalue">{{totalvalue}}</div>
@@ -13,4 +14,7 @@
     <div class="cardvalue">{{card.value}}</div>
   </div>
 {% endfor %}
+
+</div>
+
 {% endblock%}

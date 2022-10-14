@@ -4,14 +4,16 @@
 
 {% if code %}
 
-  <img src="/qrcode?data={{code}}" />
+  <img src="/qrcode?data={{code}}" /><br/>
   Gegenwert: {{value}} 
 
 {% endif %}
 
+<div class="table">
+
 <form action="/topup" method="POST">
   <div class="row">
-    <div class="col"><input type="submit" name="Aufladen" /></div>
+    <div class="col"><input type="submit" value="Aufladen"></div>
     <div class="col"><input type="number" name="value" /></div>
   </div>
 </form>
@@ -27,4 +29,7 @@
     <div class="col">{{code.value}}</div>
   </div>
 {% endfor %}
+
+</div>
+
 {% endblock%}

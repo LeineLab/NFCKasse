@@ -2,7 +2,7 @@
 {% block title %}OTP Config{% endblock%}
 {% block content %}
 
-<form action="/otp" method="post">
+<form action="/otp" method="post" class="table">
 {% if code is defined %}
   <div class="row">
     <div class="col"><a href="{{url}}"><img src=/qrcode?data={{code}}" /></a></div>
@@ -21,7 +21,7 @@
   </div>
   <div class="row">
     <div class="col"></div>
-    <div class="col"><input type="submit" name="Verifizieren" /></div>
+    <div class="col"><input type="submit" value="Verifizieren" /></div>
   </div>
 </form>
 

@@ -1,7 +1,15 @@
 
-.product {
+.product, .row {
 	display: table-row;
+	width: auto;
+	clear: both;
 }
-.product div {
-	display: table-cell;
+.product div, .col {
+	display: table-column;
+	float: left;
+	width: 200px;
+}
+.table {
+	display: table;
+	width: auto;
 }
