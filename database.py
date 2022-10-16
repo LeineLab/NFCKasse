@@ -17,6 +17,8 @@ class Database:
 		self.cursor.execute('SELECT username FROM admins WHERE username = %s', (name, ))
 		try:
 			result = self.cursor.fetchone()
+			if result is None:
+				return False
 			return True
 		except mysql.connector.Error as error:
 			return False
@@ -35,7 +37,41 @@ class Database:
 			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
 			self.cursor.execute('INSERT INTO admins (username, password) VALUES (%s, %s)', (name, hash))
 			self.db.commit()
-			return true
+			return True
+		except mysql.connector.Error as error:
+			return False
+
+	def deleteAdmin(self, name):
+		try:
+			self.cursor.execute('DELETE FROM admins WHERE username=%s', (name, ))
+			self.db.commit()
+			return True
+		except mysql.connector.Error as error:
+			return False
+
+	def changePassword(self, name, password):
+		try:
+			salt = bcrypt.gensalt()
+			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
+			self.cursor.execute('UPDATE admins SET password=%s WHERE username=%s', (hash, name))
+			self.db.commit()
+			return True
+		except mysql.connector.Error as error:
+			return False
+
+	def getAdmins(self):
+		self.cursor.execute('SELECT username, otp_validated as otp FROM admins')
+		try:
+			results = self.cursor.fetchall()
+			return results
+		except mysql.connector.Error as error:
+			return []
+
+	def resetOTP(self, name):
+		try:
+			self.cursor.execute('UPDATE admins SET otps=NULL, otp_validated=0 WHERE username = %s', (name, ))
+			self.db.commit()
+			return True
 		except mysql.connector.Error as error:
 			return False
 
@@ -45,6 +81,8 @@ class Database:
 			result = self.cursor.fetchone()
 			return result['otps']
 		except mysql.connector.Error as error:
+			return None
+		except TypeError as error:
 			return None
 
 	def hasOTPSecret(self, name):
@@ -64,6 +102,8 @@ class Database:
 			result = self.cursor.fetchone()
 			return result['otp_validated']
 		except mysql.connector.Error as error:
+			return 0
+		except TypeError as error:
 			return 0
 
 	def setOTPverified(self, name):
@@ -91,7 +131,8 @@ class Database:
 			return results
 		except TypeError:
 			return []
-		return []
+		except mysql.connector.Error as error:
+			return []
 
 	def addCard(self, hash):
 		try:
@@ -122,7 +163,7 @@ class Database:
 
 	def getBalance(self):
 		try:
-			self.cursor.execute('SELECT SUM(value) as totalvalue FROM cards')
+			self.cursor.execute('SELECT COALESCE(SUM(value),0) as totalvalue FROM cards')
 			result = self.cursor.fetchone()
 			return result['totalvalue']
 		except mysql.connector.Error as error:
@@ -131,7 +172,7 @@ class Database:
 
 	def getTopupBalance(self):
 		try:
-			self.cursor.execute('SELECT SUM(value) as totalvalue FROM topups WHERE used=0')
+			self.cursor.execute('SELECT COALESCE(SUM(value),0) as totalvalue FROM topups WHERE used=0')
 			result = self.cursor.fetchone()
 			return result['totalvalue']
 		except mysql.connector.Error as error:
@@ -164,9 +205,7 @@ class Database:
 				self.cursor.execute('UPDATE cards SET value = value + (%s) WHERE uid = %s', (value, cardhash))
 				self.db.commit()
 				return True
-			print(used)
 		except mysql.connector.Error as error:
-			print(error)
 			self.db.rollback()
 		return False
 

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Admins{% endblock%}
+{% block content %}
+
+{% if error %}
+{{error}}
+{% endif %}
+<div class="table">
+  <form class="admin row" action="/admin" method="post">
+    <div class="username col">{{username}}</div>
+    <div class="password col"><input type="password" name="password"></div>
+    <div class="password col"><input type="password" name="password2"></div>
+    <div class="action col"><input type="submit" value="Ändern"></div>
+  </form>
+
+{% for admin in admins %}
+{% if admin.username != username %}
+  <form class="admin row" action="/admin" method="post">
+    <div class="username col">{{admin.username}}<input type="hidden" name="username" value="{{admin.username}}"></div>
+    <div class="col">{% if admin.otp %}&check;{% else %}&times;{% endif %} <input type="submit" name="reset" value="OTP zurücksetzen" /></div>
+    <div class="col"><input type="submit" name="delete" onclick="" value="Löschen" /></div>
+  </form>
+{% endif %}
+{% endfor %}
+
+  <form class="admin row" action="/admin" method="post">
+    <div class="username col"><input type="text" name="username"></div>
+    <div class="password col"><input type="password" name="password"></div>
+    <div class="password col"><input type="password" name="password2"></div>
+    <div class="action col"><input type="submit" name="add" value="Hinzufügen"></div>
+  </form>
+</div>
+
+{% endblock%}

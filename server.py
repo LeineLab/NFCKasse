@@ -83,6 +83,7 @@ def isAdmin():
 	if 'username' in session:
 		if db.isAdmin(session['username']):
 			return True
+	session.clear()
 	return False
 
 @app.route('/login', methods=['GET','POST'])
@@ -140,3 +141,38 @@ def page_products():
 				app.logger.critical(e)
 	products = db.getProducts()
 	return render_template('products.html', products=products, admin=isAdmin())
+
+@app.route('/admin', methods=['GET','POST'])
+def page_admin():
+	if not isAdmin():
+		return redirect(url_for('login'))
+	if not isValidOTP():
+		return redirect(url_for('otp'))
+	error = False
+	if request.method == 'POST':
+		if 'add' in request.form:
+			if request.form['password'] != request.form['password2']:
+				error = "Passwörter stimmen nicht überein"
+			else:
+				if not db.addAdmin(request.form['username'], request.form['password']):
+					error = "Konnte Benutzer nicht anlegen"
+		elif 'password' in request.form and 'password2' in request.form:
+			if request.form['password'] != request.form['password2']:
+				error = "Passwörter stimmen nicht überein"
+			else:
+				if not db.changePassword(session['username'], request.form['password']):
+					error = "Konnte Passwort nicht ändern"
+		elif 'delete' in request.form:
+			try:
+				if request.form['username'] != session['username']:
+					db.deleteAdmin(request.form['username'])
+			except Exception as e:
+				app.logger.critical(e)
+		elif 'reset' in request.form:
+			try:
+				if request.form['username'] != session['username']:
+					db.resetOTP(request.form['username'])
+			except Exception as e:
+				app.logger.critical(e)
+	admins = db.getAdmins()
+	return render_template('admins.html', username=session['username'], admins=admins, error=error, admin=True)
