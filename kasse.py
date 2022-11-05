@@ -48,6 +48,7 @@ def ui():
 		uid = card.get()
 		if time.time() > idle:
 			disp.dim(20)
+		db.ping()
 	print(uid)
 	disp.dim(100)
 
@@ -76,13 +77,14 @@ def ui():
 		bc = None
 		retries = 0
 		btns.resetState()
-		while bc is None and retries < 10:
+		timeout = time.time() + 10
+		while bc is None and timeout > time.time():
 			bc = scan.scan()
-			retries += 1
 			pressed = btns.getPressed()
 			if pressed[1]:
 				cancel = 1
 				break
+		scan.endScan()
 		if cancel:
 			break
 		if bc == None:

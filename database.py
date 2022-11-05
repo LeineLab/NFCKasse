@@ -13,6 +13,9 @@ class Database:
 		#self.db.autocommit = True
 		self.cursor = self.db.cursor(dictionary=True)
 
+	def ping(self):
+		self.db.ping(True)
+
 	def isAdmin(self, name):
 		self.cursor.execute('SELECT username FROM admins WHERE username = %s', (name, ))
 		try:
