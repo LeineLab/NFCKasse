@@ -58,8 +58,18 @@ def ui():
 		disp.showTagNotKnown()
 		led.red()
 		if buttonLoop() == 1:
-			db.addCard(uid)
-			value = 0
+			uid2 = None
+			timeout = time.time() + 10
+			disp.showTagAgain()
+			while uid2 is None and timeout > time.time():
+				uid2 = card.get()
+			if uid == uid2:
+				db.addCard(uid)
+				value = 0
+			else:
+				disp.showTagDifferent()
+				cancel = 1
+				time.sleep(5)
 		else:
 			cancel = 1
 

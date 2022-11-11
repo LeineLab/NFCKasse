@@ -52,6 +52,16 @@ class Display:
 		self.draw.text((0, 0), "Karte vorhalten", font=self.font, fill=(255,255,255))
 		self.display.image(self.image)
 
+	def showTagAgain(self):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		self.draw.text((0, 0), "Karte erneut\nvorhalten", font=self.font, fill=(255,255,255))
+		self.display.image(self.image)
+
+	def showTagDifferent(self):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		self.draw.text((0, 0), "Karten-ID weicht ab\nKein Konto angelegt.", font=self.font, fill=(255,0,0))
+		self.display.image(self.image)
+
 	def showTagNotKnown(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte unbekannt", font=self.font, fill=(255,255,255))
