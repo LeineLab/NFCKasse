@@ -18,9 +18,11 @@
   <form action="/products" class="product row" method="post">
     <div class="ean col">{{product.ean}}<input type="hidden" name="ean" value="{{product.ean}}" /></div>
     <div class="name col">{{product.name}}</div>
-    <div class="price col">{{product.price}}</div>
+    <div class="price col">
+{% if admin %}<input type="number" step=".01" name="price" value="{% endif %}{{product.price}}{% if admin %}" />{% endif %}
+    </div>
     <div class="stock col">{{product.stock}}
-      {% if admin %} + <input type="number" name="restock" style="width:50px;" />{% endif %}
+      {% if admin %} + <input type="number" step="1" name="restock" style="width:50px;" />{% endif %}
     </div>
 {% if admin %}
     <div class="col"><input type="submit" value="Ändern" /></div>

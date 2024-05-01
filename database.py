@@ -196,6 +196,7 @@ class Database:
 		try:
 			self.cursor.execute('SELECT value, used FROM topups WHERE code = %s', (code, ))
 			result = self.cursor.fetchone()
+			print(result['value'], result['used'])
 			return result['value'], result['used']
 		except TypeError:
 			return None, None
@@ -203,12 +204,20 @@ class Database:
 	def topUpCard(self, cardhash, code):
 		try:
 			value, used = self.checkTopUp(code)
+			code = code.decode('utf-8')
 			if used == 0:
-				self.cursor.execute("UPDATE topups SET used = 1, used_on = NOW(), used_by = %s WHERE code = %s", (cardhash, code))
-				self.cursor.execute('UPDATE cards SET value = value + (%s) WHERE uid = %s', (value, cardhash))
+				print("Not yet used.")
+				print('UPDATE topups SET used = 1, used_on = NOW(), used_by = %s WHERE code = %s' % (cardhash, code))
+				self.cursor.execute('UPDATE topups SET used = 1, used_on = NOW(), used_by = %s WHERE code = %s', (cardhash, code))
+				print('UPDATE cards SET value = value + (%s) WHERE uid = %s' % (float(value), cardhash))
+				self.cursor.execute('UPDATE cards SET value = value + (%s) WHERE uid = %s', (float(value), cardhash))
+				print('INSERT INTO transactions (uid, topupcode, tdate) VALUES (%s, %s, NOW())' % (cardhash, code))
+				self.cursor.execute('INSERT INTO transactions (uid, topupcode, tdate) VALUES (%s, %s, NOW())', (cardhash, code))
 				self.db.commit()
 				return True
 		except mysql.connector.Error as error:
+			print(error)
+			#logger.exception("Topup")
 			self.db.rollback()
 		return False
 
@@ -234,6 +243,14 @@ class Database:
 		except mysql.connector.errors.DataError:
 			return False
 
+	def changeProductPrice(self, ean, price):
+		try:
+			self.cursor.execute('UPDATE products SET price = (%s) WHERE ean = %s', (price, ean))
+			self.db.commit()
+			return self.cursor.rowcount != 0
+		except mysql.connector.errors.DataError:
+			return False
+
 	def buyProduct(self, cardhash, ean):
 		try:
 			self.cursor.execute('SELECT price FROM products WHERE ean = %s', (ean, ))
@@ -241,6 +258,7 @@ class Database:
 			price = result['price']
 			self.cursor.execute('UPDATE cards SET value = value - %s WHERE uid = %s', (price, cardhash))
 			self.cursor.execute('UPDATE products SET stock = stock - 1 WHERE ean = %s', (ean, ))
+			self.cursor.execute('INSERT INTO transactions (uid, ean, tdate) VALUES (%s, %s, NOW())', (cardhash, ean))
 			self.db.commit()
 			return True
 		except mysql.connector.errors.DataError:

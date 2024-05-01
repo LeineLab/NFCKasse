@@ -31,7 +31,7 @@ def index():
 def get_qrcode():
     # please get /qrcode?data=<qrcode_data>
     data = request.args.get("data", "")
-    return send_file(qrcode(data, mode="raw"), mimetype="image/png")
+    return send_file(qrcode(data, mode="raw", border=1), mimetype="image/png")
 
 @app.route('/topup', methods=['GET','POST'])
 def topup():
@@ -132,11 +132,12 @@ def page_products():
 		if 'restock' in request.form:
 			try:
 				db.changeProductStock(request.form['ean'], request.form['restock'])
+				db.changeProductPrice(request.form['ean'], request.form['price'])
 			except Exception as e:
 				app.logger.critical(e)
 		elif 'name' in request.form:
 			try:
-				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form['stock'])
+				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form.get('stock', 0))
 			except Exception as e:
 				app.logger.critical(e)
 	products = db.getProducts()
