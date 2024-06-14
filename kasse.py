@@ -4,6 +4,7 @@ import server, led, buzzer, scanner, tag, display, buttons, database, time, logg
 from threading import Thread
 
 PIN_SCANNER_ACTIVE  = 18
+PIN_SCANNER_ACTIVE  = -1
 
 scan = scanner.BarcodeScanner(PIN_SCANNER_ACTIVE, settings.serialport)
 card = tag.NFCtag()
@@ -22,8 +23,9 @@ app  = server.app
 server.db = db
 value = 0
 
-def buttonLoop(timeout = 20):
+def buttonLoop(timeout = 20, countdown_button = -1):
 	tout = time.time() + timeout
+	lsecs = -1
 	btns.resetState()
 	while tout > time.time():
 		pressed = btns.getPressed()
@@ -31,6 +33,11 @@ def buttonLoop(timeout = 20):
 			return 0
 		if pressed[0]: #ok
 			return 1
+		if countdown_button != -1:
+			csecs = int(tout - time.time())
+			if csecs != lsecs:
+				disp.showCountdown(countdown_button, csecs)
+				lsecs = csecs
 		time.sleep(0.1)
 	logging.info("Waiting for buttons timed out")
 	return -1
@@ -77,7 +84,7 @@ def ui():
 		led.blue()
 		buzz.beep(buzz.A5, 0.15)
 		disp.showValue(value)
-		if buttonLoop() != 1:
+		if buttonLoop(3, 1) == 0:
 			cancel = 1
 
 	while not cancel:
@@ -88,8 +95,10 @@ def ui():
 		retries = 0
 		btns.resetState()
 		timeout = time.time() + 10
+		scan_iteration = 0
 		while bc is None and timeout > time.time():
-			bc = scan.scan()
+			bc = scan.scan(scan_iteration)
+			scan_iteration += 1
 			pressed = btns.getPressed()
 			if pressed[1]:
 				cancel = 1
@@ -110,7 +119,7 @@ def ui():
 				if topupval == None:
 					led.purple()
 					disp.showNoProduct()
-					if buttonLoop(10) != 1:
+					if buttonLoop(10, 0) != 1:
 						cancel = 1
 				elif isused:
 					led.red()
@@ -123,7 +132,7 @@ def ui():
 					b =  buttonLoop(10)
 					if b == 0:
 						disp.showScanMore()
-						if buttonLoop(10) != 1:
+						if buttonLoop(10, 0) != 1:
 							cancel = 1
 					elif b == -1:
 						cancel = 1
@@ -143,8 +152,8 @@ def ui():
 				disp.showProduct(name, price, value)
 				if price > value:
 					buzz.abort()
-				ret = buttonLoop(10)
-				if ret == 1:
+				ret = buttonLoop(5, 1)
+				if ret == 1 or ret == -1:
 					if price <= value:
 						db.buyProduct(uid, bc)
 						#print(db.changeCardValue(uid, -price))
@@ -154,10 +163,10 @@ def ui():
 						disp.showScanMore()
 						if buttonLoop() != 1:
 							cancel = 1
-				elif ret == -1:
-					cancel = 1
-					led.red()
-					time.sleep(1)
+				#elif ret == -1:
+				#	cancel = 1
+				#	led.red()
+				#	time.sleep(1)
 				else:
 					if price > value:
 						cancel = 1

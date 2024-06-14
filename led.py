@@ -48,6 +48,8 @@ class LED:
 		GPIO.output(self.g, 0)
 		GPIO.output(self.b, 0)
 
+"""Unittest
+"""
 if __name__ == '__main__':
 	import time
 	led = LED(5, 13, 6)

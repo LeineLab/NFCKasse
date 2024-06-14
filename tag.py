@@ -11,6 +11,8 @@ class NFCtag:
 		self.nfc.setPassiveActivationRetries(0xFF)
 		self.nfc.SAMConfig()
 
+	"""Check if there is a tag available and return hash if present
+	"""
 	def get(self):
 		success, uid = self.nfc.readPassiveTargetID(pn532.PN532_MIFARE_ISO14443A_106KBPS)
 		if (success):

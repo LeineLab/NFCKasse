@@ -19,6 +19,8 @@ class Display:
 	font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
 	fontsmall = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
 
+	"""Initialize Display with black fill and set brightness to dimmed
+	"""
 	def __init__(self, CS = CE0, DC = D25, RST = D24, BL = 12):
 		self.CS_PIN = CS
 		self.DC_PIN = DC
@@ -36,80 +38,134 @@ class Display:
 		self.backlight.start(50)
 		self.display.fill(0)
 
+	"""Set display brightness 0-255
+	"""
 	def dim(self, level):
 		self.backlight.ChangeDutyCycle(level)
 
+	"""Show two options to choose from
+
+	@param ok	Text of left button
+	@param cancel	Text of right button
+	"""
 	def showOptions(self, ok, cancel):
 		text = ok
+		print(text)
 		(t1, t2, font_width, font_height) = self.fontsmall.getbbox(text)
 		self.draw.text((0, self.HEIGHT - font_height), text, font=self.fontsmall, fill=(0,200,0))
 		text = cancel
 		(t1, t2, font_width, font_height) = self.fontsmall.getbbox(text)
 		self.draw.text((self.WIDTH - font_width, self.HEIGHT - font_height), text, font=self.fontsmall, fill=(200,0,0))
 
+	"""Show countdown
+
+	@param button_color	RGB value for countdown
+	@param timer	Number to display
+	"""
+	def showCountdown(self, button_color, timer):
+		# clear possible old text
+		text = str(timer+1)
+		(t1, t2, font_width, font_height) = self.fontsmall.getbbox(text)
+		x = (self.WIDTH - font_width) / 2
+		y = self.HEIGHT - font_height - 15
+		self.draw.rectangle([(x, y), (x+font_width, y+font_height)], fill=(0,0,0))
+#		self.draw.text(((self.WIDTH - font_width)/2, self.HEIGHT - font_height - 15), text, font=self.fontsmall, fill=(0,0,0))
+		# print new
+		text = str(timer)
+		(t1, t2, font_width, font_height) = self.fontsmall.getbbox(text)
+#		self.draw.text((self.WIDTH - font_width, self.HEIGHT - font_height), text, font=self.fontsmall, fill=(200,0,0))
+#		print(self.HEIGHT, font_height, self.WIDTH, font_width, (self.WIDTH - font_width)/2)
+#		self.draw.text((10, 10), "Yeay!", font=self.fontsmall, fill=(200, 0, 0))
+		self.draw.text(((self.WIDTH - font_width)/2, self.HEIGHT - font_height - 15), text, font=self.fontsmall, fill=(200-button_color * 200,button_color * 200,0))
+		self.display.image(self.image)
+
+	"""Show prompt to present tag
+	"""
 	def showTag(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte vorhalten", font=self.font, fill=(255,255,255))
 		self.display.image(self.image)
 
+	"""Show prompt to present tag again
+	"""
 	def showTagAgain(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte erneut\nvorhalten", font=self.font, fill=(255,255,255))
 		self.display.image(self.image)
 
+	"""Show message, that IDs differ
+	"""
 	def showTagDifferent(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karten-ID weicht ab\nKein Konto angelegt.", font=self.font, fill=(255,0,0))
 		self.display.image(self.image)
 
+	"""Show message, that currently the card is unknown
+	"""
 	def showTagNotKnown(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte unbekannt", font=self.font, fill=(255,255,255))
 		self.showOptions("Neu anlegen","Abbruch")
 		self.display.image(self.image)
 
+	"""Show prompt to scan product
+	"""
 	def showScan(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Artikel scannen", font=self.font, fill=(255,255,255))
 		self.showOptions("","Logout")
 		self.display.image(self.image)
 
+	"""Show dialog, if more customer wants to scan more articles
+	"""
 	def showScanMore(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Weitere Artikel?", font=self.font, fill=(255,255,255))
 		self.showOptions("Artikel scannen","Logout")
 		self.display.image(self.image)
 
+	"""Show current value of the card
+	"""
 	def showValue(self, value):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Hallo!\nDerzeitiges Guthaben:\n%.2f" % value, font=self.font, fill=(255,255,255))
 		self.showOptions("Artikel scannen","Logout")
 		self.display.image(self.image)
 
+	"""Show message, that barcode scanning was unsuccessful
+	"""
 	def showNoCode(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Kein Barcode erkannt", font=self.font, fill=(255,255,255))
 		self.showOptions("Artikel scannen","Logout")
 		self.display.image(self.image)
 
+	"""Show message, that the code is not matching any product or topup code
+	"""
 	def showNoProduct(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Produkt nicht gelistet", font=self.font, fill=(255,255,255))
 		self.showOptions("Artikel scannen","Logout")
 		self.display.image(self.image)
 
+	"""Show message, that the topup code is already redeemed
+	"""
 	def showTopUpUsed(self):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Aufladecode bereits\nbenutzt. Aufladen\nnicht möglich", font=self.font, fill=(255,255,255))
 		self.showOptions("Artikel scannen","Logout")
 		self.display.image(self.image)
 
+	"""Show value of topup code
+	"""
 	def showTopUp(self, value):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Gegenwert:\n%.2f" % (value, ), font=self.font, fill=(255,255,255))
 		self.showOptions("Aufladen","Abbruch")
 		self.display.image(self.image)
 
+	"""Show product name, price and card value
+	"""
 	def showProduct(self, name, price, value):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Artikel:\n%s\nPreis: %.2f\nGuthaben: %.2f" % (name, price, value), font=self.font, fill=(255,255,255))
@@ -119,7 +175,8 @@ class Display:
 			self.showOptions("Buchen","Abbruch")
 		self.display.image(self.image)
 
-
+"""Unittest sample
+"""
 if __name__ == '__main__':
 	from time import sleep
 	disp = Display()
@@ -132,20 +189,3 @@ if __name__ == '__main__':
 	disp.showNoProduct()
 	sleep(2)
 	disp.showProduct("Premium Cola", 1.0, 542.32)
-
-
-'''
-# Main loop:
-while True:
-    # Clear the display
-    display.fill(0)
-    # Draw a red pixel in the center.
-    display.pixel(120, 160, color565(255, 0, 0))
-    display.print(0,20,"foo")
-    # Pause 2 seconds.
-    time.sleep(2)
-    # Clear the screen blue.
-    display.fill(color565(0, 0, 255))
-    # Pause 2 seconds.
-    time.sleep(2)
-'''
