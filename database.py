@@ -258,7 +258,7 @@ class Database:
 			if used == 0:
 				self.cursor.execute('UPDATE topups SET used = 1, used_on = NOW(), used_by = %s WHERE code = %s', (cardhash, code))
 				self.cursor.execute('UPDATE cards SET value = value + (%s) WHERE uid = %s', (float(value), cardhash))
-				self.cursor.execute('INSERT INTO transactions (uid, topupcode, tdate) VALUES (%s, %s, NOW())', (cardhash, code))
+				self.cursor.execute('INSERT INTO transactions (uid, topupcode, value, tdate) VALUES (%s, %s, %s, NOW())', (cardhash, code, value))
 				self.db.commit()
 				return True
 		except mysql.connector.Error as error:
@@ -315,7 +315,7 @@ class Database:
 			#should fail if result is < 0, as value is unsigned
 			self.cursor.execute('UPDATE cards SET value = value - %s WHERE uid = %s', (price, cardhash))
 			self.cursor.execute('UPDATE products SET stock = stock - 1 WHERE ean = %s', (ean, ))
-			self.cursor.execute('INSERT INTO transactions (uid, ean, tdate) VALUES (%s, %s, NOW())', (cardhash, ean))
+			self.cursor.execute('INSERT INTO transactions (uid, ean, value, tdate) VALUES (%s, %s, %s, NOW())', (cardhash, ean, price))
 			self.db.commit()
 			return True
 		except mysql.connector.errors.DataError:
