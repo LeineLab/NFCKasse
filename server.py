@@ -43,7 +43,7 @@ def topup():
 	value = 0
 	if request.method == 'POST':
 		try:
-			value = int(request.form['value'])
+			value = float(request.form['value'])
 			if value <= 0:
 				raise Exception('Less than zero')
 			code = db.generateTopUp(value)
