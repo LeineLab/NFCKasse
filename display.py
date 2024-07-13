@@ -110,9 +110,9 @@ class Display:
 
 	"""Show prompt to scan product
 	"""
-	def showScan(self):
+	def showScan(self, value):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Artikel scannen", font=self.font, fill=(255,255,255))
+		self.draw.text((0, 0), "Artikel scannen\nDerzeitiges Guthaben:\n%.2f" % value, font=self.font, fill=(255,255,255))
 		self.showOptions("","Logout")
 		self.display.image(self.image)
 

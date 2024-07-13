@@ -80,16 +80,9 @@ def ui():
 		else:
 			cancel = 1
 
-	if not cancel:
-		led.blue()
-		buzz.beep(buzz.A5, 0.15)
-		disp.showValue(value)
-		if buttonLoop(3, 1) == 0:
-			cancel = 1
-
 	while not cancel:
-		print("Scan")
-		disp.showScan()
+		buzz.beep(buzz.A5, 0.15)
+		disp.showScan(value)
 		led.white()
 		bc = None
 		retries = 0
