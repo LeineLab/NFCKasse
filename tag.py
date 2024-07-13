@@ -1,7 +1,5 @@
-
 from pn532pi import Pn532I2c, Pn532, pn532
 from hashlib import md5
-#import binascii
 
 class NFCtag:
 	def __init__(self, port = 1):
@@ -19,3 +17,13 @@ class NFCtag:
 			return md5(uid).hexdigest()
 		else:
 			return None
+
+if __name__ == '__main__':
+	oldTag = None
+	nfctag = NFCtag()
+	while True:
+		tag = nfctag.get()
+		if tag != oldTag:
+			oldTag = tag
+			if tag is not None:
+				print("Found new Tag, Hash is %s" % tag)

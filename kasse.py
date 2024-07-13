@@ -36,7 +36,7 @@ def buttonLoop(timeout = 20, countdown_button = -1):
 		if countdown_button != -1:
 			csecs = int(tout - time.time())
 			if csecs != lsecs:
-				disp.showCountdown(countdown_button, csecs)
+#				disp.showCountdown(countdown_button, csecs)
 				lsecs = csecs
 		time.sleep(0.1)
 	logging.info("Waiting for buttons timed out")
@@ -160,7 +160,7 @@ def ui():
 						#print(db.reduceProductStock(bc, 1))
 						value = db.getCard(uid)
 						led.green()
-						disp.showScanMore()
+						disp.showScanMore(value)
 						if buttonLoop() != 1:
 							cancel = 1
 				#elif ret == -1:
@@ -172,7 +172,8 @@ def ui():
 						cancel = 1
 					else:
 						led.red()
-						disp.showScanMore()
+						value = db.getCard(uid)
+						disp.showScanMore(value)
 						if not buttonLoop():
 							cancel = 1
 							led.red()

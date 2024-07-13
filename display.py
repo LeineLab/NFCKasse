@@ -118,9 +118,9 @@ class Display:
 
 	"""Show dialog, if more customer wants to scan more articles
 	"""
-	def showScanMore(self):
+	def showScanMore(self, value):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Weitere Artikel?", font=self.font, fill=(255,255,255))
+		self.draw.text((0, 0), "Weitere Artikel?\nDerzeitiges Guthaben:\n%.2f" % value, font=self.font, fill=(255,255,255))
 		self.showOptions("Artikel scannen","Logout")
 		self.display.image(self.image)
 
