@@ -30,8 +30,8 @@ Ansonsten wirst du nach kurzer Zeit automatisch ausgeloggt.
 Produkte, die nicht mit Barcodes ausgestattet sind, haben neben der Kasse einen Ausdruck, der alternativ davor gehalten werden muss.
 
 ## Datenschutz
-Die ID der Karte wird als Hash ohne persönliche Verbindung gespeichert, Transaktionen (Käufe, QR-Aufladungen, Überweisungen am Bankomaten) werden mit diesem Hash in Verbindung gespeichert.
-Einzahlungen am Bankomaten werden zusätzlich mit der ungehashten ID gespeichert.
+Die ID der Karte wird als Hash ohne persönliche Verbindung gespeichert, Transaktionen (Käufe, QR-Aufladungen, Überweisungen am Bankomaten) werden mit diesem Hash und einem Zeitstempel in Verbindung gespeichert.
+Einzahlungen am Bankomaten werden dort zusätzlich mit der ungehashten ID gespeichert.
 
 ### Verlust der Karte
 Da keine Zuordnung der Karten zu Personen erfolgt, ist eine Umbuchung oder Auszahlung einer verlorenen Karte nicht möglich.
