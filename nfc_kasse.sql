@@ -92,13 +92,16 @@ CREATE TABLE `transactions` (
   `uid` varchar(32) NOT NULL,
   `ean` bigint(20) unsigned DEFAULT NULL,
   `topupcode` varchar(32) DEFAULT NULL,
+  `exchange_with_uid` varchar(32) DEFAULT NULL,
   `value` decimal(5,2) NOT NULL,
   `tdate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`tid`),
   KEY `ean` (`ean`),
   KEY `uid` (`uid`),
+  KEY `exchange_with_uid` (`exchange_with_uid`),
   CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`ean`) REFERENCES `products` (`ean`) ON UPDATE CASCADE,
-  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`uid`) REFERENCES `cards` (`uid`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`uid`) REFERENCES `cards` (`uid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `transactions_ibfk_3` FOREIGN KEY (`exchange_with_uid`) REFERENCES `cards` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
