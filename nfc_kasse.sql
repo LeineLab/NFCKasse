@@ -39,7 +39,7 @@ DROP TABLE IF EXISTS `cards`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `cards` (
   `uid` varchar(32) NOT NULL,
-  `value` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `value` decimal(7,2) unsigned NOT NULL DEFAULT 0.00,
   PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
