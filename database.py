@@ -12,6 +12,7 @@ class Database:
 		)
 		#self.db.autocommit = True
 		self.cursor = self.db.cursor(dictionary=True)
+		self.cursor.execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED')
 
 	def ping(self):
 		self.db.ping(True)
