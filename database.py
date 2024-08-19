@@ -316,7 +316,7 @@ class Database:
 			#should fail if result is < 0, as value is unsigned
 			self.cursor.execute('UPDATE cards SET value = value - %s WHERE uid = %s', (price, cardhash))
 			self.cursor.execute('UPDATE products SET stock = stock - 1 WHERE ean = %s', (ean, ))
-			self.cursor.execute('INSERT INTO transactions (uid, ean, value, tdate) VALUES (%s, %s, %s, NOW())', (cardhash, ean, price))
+			self.cursor.execute('INSERT INTO transactions (uid, ean, value, tdate) VALUES (%s, %s, %s, NOW())', (cardhash, ean, -price))
 			self.db.commit()
 			return True
 		except mysql.connector.errors.DataError:
