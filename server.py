@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, send_file, session, escape, url_for, redirect
+from flask import Flask, render_template, request, send_file, session, url_for, redirect
+from markupsafe import escape
 from flask_qrcode import QRcode
 import uuid
 import pyotp
