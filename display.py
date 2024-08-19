@@ -29,6 +29,7 @@ class Display:
 		self.display = ili9341.ILI9341(
 			self.spi,
 			rotation=270,
+			baudrate=64000000,
 			cs=digitalio.DigitalInOut(self.CS_PIN),
 			dc=digitalio.DigitalInOut(self.DC_PIN),
 			rst=digitalio.DigitalInOut(self.RST_PIN))
@@ -73,9 +74,6 @@ class Display:
 		# print new
 		text = str(timer)
 		(t1, t2, font_width, font_height) = self.fontsmall.getbbox(text)
-#		self.draw.text((self.WIDTH - font_width, self.HEIGHT - font_height), text, font=self.fontsmall, fill=(200,0,0))
-#		print(self.HEIGHT, font_height, self.WIDTH, font_width, (self.WIDTH - font_width)/2)
-#		self.draw.text((10, 10), "Yeay!", font=self.fontsmall, fill=(200, 0, 0))
 		self.draw.text(((self.WIDTH - font_width)/2, self.HEIGHT - font_height - 15), text, font=self.fontsmall, fill=(200-button_color * 200,button_color * 200,0))
 		self.display.image(self.image)
 
@@ -180,7 +178,7 @@ class Display:
 if __name__ == '__main__':
 	from time import sleep
 	disp = Display()
-	disp.showScan()
+	disp.showScan(123)
 	sleep(2)
 	disp.showValue(5.32)
 	sleep(2)
