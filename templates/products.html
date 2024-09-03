@@ -11,6 +11,8 @@
     <div class="stock col">Bestand</div>
 {% if admin  %}
     <div class="col">&nbsp;</div>
+    <div class="popularity col">7d</div>
+    <div class="popularity col">30d</div>
 {% endif %}
   </div>
 
@@ -26,6 +28,8 @@
     </div>
 {% if admin %}
     <div class="col"><input type="submit" value="Ändern" /></div>
+    <div class="popularity col"><div class="popularity" style="width: {{product.sales_7d / sales_7d * 100}}%; background-color: rgba({{[510 - product.sales_7d / sales_7d * 510, 255] | min}}, {{[product.sales_7d / sales_7d * 510, 255] | min}}, 0, 1)" title="{{product.sales_7d}}">{{product.sales_7d * product.price}} €</div></div>
+    <div class="popularity col"><div class="popularity" style="width: {{product.sales_30d / sales_30d * 100}}%; background-color: rgba({{[510 - product.sales_30d / sales_30d * 510, 255] | min}}, {{[product.sales_30d / sales_30d * 510, 255] | min}}, 0, 1)" title="{{product.sales_30d}}">{{product.sales_30d * product.price}} €</div></div>
 {% endif %}
   </form>
 {% endfor %}
@@ -37,6 +41,8 @@
     <div class="price col"><input type="number" step="0.01" name="price" /></div>
     <div class="stock col"><input type="number" name="stock" /></div>
     <div class="col"><input type="submit" value="Hinzufügen" /></div>
+    <div class="popularity col">{{revenue_7d}}</div>
+    <div class="popularity col">{{revenue_30d}}</div>
   </form>
 {% endif %}
 

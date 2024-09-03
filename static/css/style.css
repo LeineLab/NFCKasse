@@ -37,6 +37,10 @@ input {
 .product .stock {
 	width: 120px;
 }
+.product .popularity {
+	width: 100px;
+	white-space: nowrap;
+}
 .product .price input, .product .stock input {
 	width: 50px;
 	float: right;

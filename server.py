@@ -142,7 +142,18 @@ def page_products():
 			except Exception as e:
 				app.logger.critical(e)
 	products = db.getProducts()
-	return render_template('products.html', products=products, admin=isAdmin())
+	sales_7d = db.getProductMaxSales(7)
+	sales_30d = db.getProductMaxSales(30)
+	revenue_7d = db.getRevenue(7)
+	revenue_30d = db.getRevenue(30)
+	return render_template('products.html',
+		products=products,
+		sales_7d=sales_7d,
+		sales_30d=sales_30d,
+		revenue_7d=revenue_7d,
+		revenue_30d=revenue_30d,
+		admin=isAdmin()
+	)
 
 @app.route('/admin', methods=['GET','POST'])
 def page_admin():

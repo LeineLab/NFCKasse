@@ -161,7 +161,7 @@ class Database:
 	"""Web frontend, get list of products
 	"""
 	def getProducts(self):
-		self.cursor.execute('SELECT ean, name, price, stock FROM products')
+		self.cursor.execute('SELECT p.ean, p.name, p.price, p.stock, IFNULL(t1.sales_7d, 0) as sales_7d, IFNULL(t2.sales_30d, 0) as sales_30d FROM products p LEFT JOIN (SELECT count(tid) AS sales_7d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 7 DAY) GROUP BY ean) t1 ON p.ean = t1.ean LEFT JOIN (SELECT count(tid) AS sales_30d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 30 DAY) GROUP BY ean) t2 ON p.ean = t2.ean')
 		try:
 			results = self.cursor.fetchall()
 			return results
@@ -169,6 +169,34 @@ class Database:
 			return []
 		except mysql.connector.Error as error:
 			return []
+	
+	"""Web frontend, get maximum sales in last n days
+	
+	@param duration Duration to get sales for in days
+	"""
+	def getProductMaxSales(self, duration):
+		self.cursor.execute('SELECT IFNULL(MAX(s.sales), 1) as max_sales FROM (SELECT count(tid) AS sales, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL %s DAY) GROUP BY ean) s', (duration, ))
+		try:
+			result = self.cursor.fetchone()
+			return result['max_sales']
+		except TypeError:
+			return None
+		except mysql.connector.Error as error:
+			return None
+	
+	"""Web frontend, get overall revenue in last n days
+	
+	@param duration Duration to get revenue for in days
+	"""
+	def getRevenue(self, duration):
+		self.cursor.execute('SELECT SUM(r.revenue) as overall_revenue FROM (SELECT count(tid) * p.price AS revenue FROM transactions t JOIN products p ON t.ean = p.ean WHERE t.ean IS NOT NULL AND t.tdate >= DATE_SUB(now(), INTERVAL %s DAY) GROUP BY t.ean) r', (duration, ))
+		try:
+			result = self.cursor.fetchone()
+			return result['overall_revenue']
+		except TypeError:
+			return None
+		except mysql.connector.Error as error:
+			return None
 
 	"""Register new card
 	"""
