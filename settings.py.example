@@ -5,6 +5,8 @@ db_user = 'nfc_kasse'
 db_password = 'password'
 db_database = 'nfc_kasse'
 
+uid_hash = True
+
 # Barcodescanner
 serialport = '/dev/ttyS0'
 

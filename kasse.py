@@ -7,7 +7,7 @@ PIN_SCANNER_ACTIVE  = 18
 PIN_SCANNER_ACTIVE  = -1
 
 scan = scanner.BarcodeScanner(PIN_SCANNER_ACTIVE, settings.serialport)
-card = tag.NFCtag()
+card = tag.NFCtag(port = 1, uid_hash = settings.uid_hash)
 disp = display.Display()
 btns = buttons.Buttons(21, 20)
 buzz = buzzer.Buzzer(19)
@@ -36,7 +36,7 @@ def buttonLoop(timeout = 20, countdown_button = -1):
 		if countdown_button != -1:
 			csecs = int(tout - time.time())
 			if csecs != lsecs:
-#				disp.showCountdown(countdown_button, csecs)
+				disp.showCountdown(countdown_button, csecs)
 				lsecs = csecs
 		time.sleep(0.1)
 	logging.info("Waiting for buttons timed out")
