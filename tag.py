@@ -18,13 +18,17 @@ class NFCtag:
 			if self.uid_hash:
 				return md5(uid).hexdigest()
 			else:
-				return uid
+				tag_uid = 0
+				for i in uid:
+					tag_uid <<= 8
+					tag_uid += i
+				return tag_uid
 		else:
 			return None
 
 if __name__ == '__main__':
 	oldTag = None
-	nfctag = NFCtag()
+	nfctag = NFCtag(uid_hash = False)
 	while True:
 		tag = nfctag.get()
 		if tag != oldTag:

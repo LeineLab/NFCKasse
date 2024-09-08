@@ -288,6 +288,11 @@ class Database:
 				self.cursor.execute('UPDATE topups SET used = 1, used_on = NOW(), used_by = %s WHERE code = %s', (cardhash, code))
 				self.cursor.execute('UPDATE cards SET value = value + (%s) WHERE uid = %s', (float(value), cardhash))
 				self.cursor.execute('INSERT INTO transactions (uid, topupcode, value, tdate) VALUES (%s, %s, %s, NOW())', (cardhash, code, value))
+				try:
+					self.cursor.execute('INSERT INTO sessions (uid, machine, start_time, end_time, price) VALUES (%s, \'topup\', UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), %s)', (cardhash, value))
+				except Exception as e: #no laser
+					print(e)
+					pass
 				self.db.commit()
 				return True
 		except mysql.connector.Error as error:
@@ -338,13 +343,19 @@ class Database:
 	"""
 	def buyProduct(self, cardhash, ean):
 		try:
-			self.cursor.execute('SELECT price FROM products WHERE ean = %s', (ean, ))
+			self.cursor.execute('SELECT name, price FROM products WHERE ean = %s', (ean, ))
 			result = self.cursor.fetchone()
+			name = result['name']
 			price = result['price']
 			#should fail if result is < 0, as value is unsigned
 			self.cursor.execute('UPDATE cards SET value = value - %s WHERE uid = %s', (price, cardhash))
 			self.cursor.execute('UPDATE products SET stock = stock - 1 WHERE ean = %s', (ean, ))
 			self.cursor.execute('INSERT INTO transactions (uid, ean, value, tdate) VALUES (%s, %s, %s, NOW())', (cardhash, ean, -price))
+			try:
+				self.cursor.execute('INSERT INTO sessions (uid, machine, comment, start_time, end_time, price) VALUES (%s, \'material\', %s, UNIX_TIMESTAMP(), UNIX_TIMESTAMP(), %s)', (cardhash, name, -price))
+			except Exception as e: #no laser
+				print(e)
+				pass
 			self.db.commit()
 			return True
 		except mysql.connector.errors.DataError:
