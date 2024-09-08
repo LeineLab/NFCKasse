@@ -20,9 +20,11 @@ class BarcodeScanner:
 			#Enable trigger pin
 			GPIO.output(self.trigger_pin, 0)
 		elif not repeated_scan:
-			#Scan will be active for 5s, no need to resend on every interval
+			#Scan will be active for set time, no need to resend on every interval
 			#Enable serial control
 			self.conn.write(b'\x7E\x00\x08\x01\x00\x00\xD5\xAB\xCD')
+			#Extend time to 20s zone 0x0006 = C8h / 200d
+			self.conn.write(b'\x7E\x00\x08\x01\x00\x06\xC8\xAB\xCD')
 			#Trigger scanning
 			self.conn.write(b'\x7E\x00\x08\x01\x00\x02\x01\xAB\xCD')
 		while self.conn.in_waiting:
