@@ -27,6 +27,7 @@ Die restliche Installation funktioniert mit der Installation von `python-venv`:
 
 ```
 apt install mariadb-server python-venv git
+cd /opt
 git clone [dieses git repo] kasse
 cd kasse
 python -m venv venv
@@ -40,10 +41,18 @@ sudo mysql
 CREATE USER nfckasse@localhost IDENTIFIED BY [passwort];
 CREATE DATABASE nfckasse;
 GRANT SELECT, INSERT, UPDATE ON nfckasse.* TO nfckasse@localhost;
+GRANT SELECT, INSERT, UPDATE, DELETE ON nfckasse.admins TO nfckasse@localhost;
 ```
 Statt `nfckasse` können als User und Datenbankname auch andere Namen genutzt werden.
 Die Parameter dann entsprechend in die settings.py eintragen.
 Um die Tabellen anzulegen reicht dann `sudo mysql -p nfckasse < nfc_kasse.sql`.
+
+Wenn alles soweit abgeschlossen ist, noch den service installieren `cp nfckasse.service /etc/systemd/system/` und beim Booten standardmäßig ausführen `systemctl enable nfckasse`.
+Zum Starten `systemctl start nfckasse` ausführen.
+
+Initialer Webinterface-User ist admin/changeme - hier muss - wie für alle Admin-User - beim ersten Login ein OTP eingerichtet werden.
+Das Webinterface selbst ist auf Port 5000 verfügbar.
+Neue Admins können dann über das Interface angelegt werden, der eigene User kann nicht gelöscht werden, dafür von einem anderen Konto einloggen und dann den User löschen (oder Passwort ändern, sofern man `admin` behalten möchte).
 
 Wenn die `install.sh` genutzt wird, muss die Datenbank dennoch vorher angelegt, wie auch die `settings.py` angepasst werden!
 
