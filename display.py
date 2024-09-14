@@ -77,6 +77,13 @@ class Display:
 		self.draw.text(((self.WIDTH - font_width)/2, self.HEIGHT - font_height - 15), text, font=self.fontsmall, fill=(200-button_color * 200,button_color * 200,0))
 		self.display.image(self.image)
 
+	"""Show warning, that db is not connected
+	"""
+	def showNoConnection(self):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		self.draw.text((0, 0), "Keine Verbindung\nDatenbank offline\nGgf. neu starten", font=self.font, fill=(255,0,0))
+		self.display.image(self.image)
+
 	"""Show prompt to present tag
 	"""
 	def showTag(self):

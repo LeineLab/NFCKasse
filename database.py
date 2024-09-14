@@ -4,22 +4,46 @@ import bcrypt
 
 class Database:
 	def __init__(self, **kwargs):
-		self.db = mysql.connector.connect(
-			host = kwargs['host'],
-			user = kwargs['user'],
-			password = kwargs['password'],
-			database = kwargs['database']
-		)
-		#self.db.autocommit = True
-		self.cursor = self.db.cursor(dictionary=True)
-		self.cursor.execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED')
+		self.db_host = kwargs['host']
+		self.db_user = kwargs['user']
+		self.db_password = kwargs['password']
+		self.db_database = kwargs['database']
+		self.db = None
+		self.connect()
+
+	def connect(self):
+		if self.db is not None and self.db.is_connected():
+			try:
+				self.db.ping(True)
+				return True
+			except InterfaceError:
+				pass
+		try:
+			self.db = mysql.connector.connect(
+				host = self.db_host,
+				user = self.db_user,
+				password = self.db_password,
+				database = self.db_database
+			)
+			#self.db.autocommit = True
+			self.cursor = self.db.cursor(dictionary=True)
+			self.cursor.execute('SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED')
+			return True
+		except Exception as e:
+			return False
 
 	def ping(self):
-		self.db.ping(True)
+		try:
+			self.db.ping(True)
+			return True
+		except InterfaceError:
+			return False
 
 	"""Web frontend check, if user exists
 	"""
 	def isAdmin(self, name):
+		if not self.connect():
+			return False
 		self.cursor.execute('SELECT username FROM admins WHERE username = %s', (name, ))
 		try:
 			result = self.cursor.fetchone()
@@ -32,6 +56,8 @@ class Database:
 	"""Web frontend, validate password
 	"""
 	def checkAdmin(self, name, password):
+		if not self.connect():
+			return False
 		self.cursor.execute('SELECT password FROM admins WHERE username = %s', (name, ))
 		try:
 			result = self.cursor.fetchone()
@@ -42,6 +68,8 @@ class Database:
 	"""Web frontend, add new user
 	"""
 	def addAdmin(self, name, password):
+		if not self.connect():
+			return False
 		try:
 			salt = bcrypt.gensalt()
 			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
@@ -54,6 +82,8 @@ class Database:
 	"""Web frontend, remove user
 	"""
 	def deleteAdmin(self, name):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('DELETE FROM admins WHERE username=%s', (name, ))
 			self.db.commit()
@@ -64,6 +94,8 @@ class Database:
 	"""Web frontend, change password of user
 	"""
 	def changePassword(self, name, password):
+		if not self.connect():
+			return False
 		try:
 			salt = bcrypt.gensalt()
 			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
@@ -76,6 +108,8 @@ class Database:
 	"""Web frontend, list users
 	"""
 	def getAdmins(self):
+		if not self.connect():
+			return []
 		self.cursor.execute('SELECT username, otp_validated as otp FROM admins')
 		try:
 			results = self.cursor.fetchall()
@@ -88,6 +122,8 @@ class Database:
 	User needs to login after the reset and complete the OTP setup
 	"""
 	def resetOTP(self, name):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('UPDATE admins SET otps=NULL, otp_validated=0 WHERE username = %s', (name, ))
 			self.db.commit()
@@ -98,6 +134,8 @@ class Database:
 	"""Web frontend, get OTP secret for user
 	"""
 	def getOTPSecret(self, name):
+		if not self.connect():
+			return None
 		self.cursor.execute('SELECT otps FROM admins WHERE username = %s', (name, ))
 		try:
 			result = self.cursor.fetchone()
@@ -115,6 +153,8 @@ class Database:
 	"""Web frontend, setup OTP secret for user
 	"""
 	def setOTPSecret(self, name, secret):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('UPDATE admins SET otps = %s WHERE username = %s', (secret, name))
 			self.db.commit()
@@ -125,6 +165,8 @@ class Database:
 	"""Web frontend, check if user has validated the OTP secret
 	"""
 	def isOTPverified(self, name):
+		if not self.connect():
+			return 0
 		self.cursor.execute('SELECT otp_validated FROM admins WHERE username = %s', (name, ))
 		try:
 			result = self.cursor.fetchone()
@@ -137,6 +179,8 @@ class Database:
 	"""Web frontend, set OTP secret as validated for user
 	"""
 	def setOTPverified(self, name):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('UPDATE admins SET otp_validated = 1 WHERE username = %s', (name,))
 			self.db.commit()
@@ -149,6 +193,8 @@ class Database:
 	@returns Tuple of (name, price)
 	"""
 	def getProduct(self, ean):
+		if not self.connect():
+			return (None, None)
 		self.cursor.execute('SELECT name, price FROM products WHERE ean = %s', (ean, ))
 		try:
 			result = self.cursor.fetchone()
@@ -161,6 +207,8 @@ class Database:
 	"""Web frontend, get list of products
 	"""
 	def getProducts(self):
+		if not self.connect():
+			return []
 		self.cursor.execute('SELECT p.ean, p.name, p.price, p.stock, IFNULL(t1.sales_7d, 0) as sales_7d, IFNULL(t2.sales_30d, 0) as sales_30d FROM products p LEFT JOIN (SELECT count(tid) AS sales_7d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 7 DAY) GROUP BY ean) t1 ON p.ean = t1.ean LEFT JOIN (SELECT count(tid) AS sales_30d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 30 DAY) GROUP BY ean) t2 ON p.ean = t2.ean')
 		try:
 			results = self.cursor.fetchall()
@@ -175,6 +223,8 @@ class Database:
 	@param duration Duration to get sales for in days
 	"""
 	def getProductMaxSales(self, duration):
+		if not self.connect():
+			return None
 		self.cursor.execute('SELECT IFNULL(MAX(s.sales), 1) as max_sales FROM (SELECT count(tid) AS sales, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL %s DAY) GROUP BY ean) s', (duration, ))
 		try:
 			result = self.cursor.fetchone()
@@ -189,6 +239,8 @@ class Database:
 	@param duration Duration to get revenue for in days
 	"""
 	def getRevenue(self, duration):
+		if not self.connect():
+			return None
 		self.cursor.execute('SELECT SUM(r.revenue) as overall_revenue FROM (SELECT count(tid) * p.price AS revenue FROM transactions t JOIN products p ON t.ean = p.ean WHERE t.ean IS NOT NULL AND t.tdate >= DATE_SUB(now(), INTERVAL %s DAY) GROUP BY t.ean) r', (duration, ))
 		try:
 			result = self.cursor.fetchone()
@@ -201,6 +253,8 @@ class Database:
 	"""Register new card
 	"""
 	def addCard(self, hash):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('INSERT INTO cards (uid) VALUES (%s)', (hash, ))
 			result = self.db.commit()
@@ -211,6 +265,8 @@ class Database:
 	"""Check if card is registered and return value
 	"""
 	def getCard(self, hash):
+		if not self.connect():
+			return None
 		try:
 			self.cursor.execute('SELECT value FROM cards WHERE uid = %s', (hash, ))
 			result = self.cursor.fetchone()
@@ -223,6 +279,8 @@ class Database:
 	"""Web frontend, list all cards and values
 	"""
 	def getCards(self):
+		if not self.connect():
+			return []
 		try:
 			self.cursor.execute('SELECT uid, value FROM cards')
 			results = self.cursor.fetchall()
@@ -234,6 +292,8 @@ class Database:
 	"""Web frontend, get total credits of all cards
 	"""
 	def getBalance(self):
+		if not self.connect():
+			return 0
 		try:
 			self.cursor.execute('SELECT COALESCE(SUM(value),0) as totalvalue FROM cards')
 			result = self.cursor.fetchone()
@@ -245,6 +305,8 @@ class Database:
 	"""Web frontend, get total topup value not redeemed
 	"""
 	def getTopupBalance(self):
+		if not self.connect():
+			return 0
 		try:
 			self.cursor.execute('SELECT COALESCE(SUM(value),0) as totalvalue FROM topups WHERE used=0')
 			result = self.cursor.fetchone()
@@ -256,6 +318,8 @@ class Database:
 	"""Web frontend, generate topup hash for a given amount
 	"""
 	def generateTopUp(self, amount):
+		if not self.connect():
+			return None
 		try:
 			code = uuid.uuid4().hex
 			print(code)
@@ -270,10 +334,11 @@ class Database:
 	@return Tuple of (value, used)
 	"""
 	def checkTopUp(self, code):
+		if not self.connect():
+			return None, None
 		try:
 			self.cursor.execute('SELECT value, used FROM topups WHERE code = %s', (code, ))
 			result = self.cursor.fetchone()
-			print(result['value'], result['used'])
 			return result['value'], result['used']
 		except TypeError:
 			return None, None
@@ -281,6 +346,8 @@ class Database:
 	"""Redeem topup code for card
 	"""
 	def topUpCard(self, cardhash, code):
+		if not self.connect():
+			return False
 		try:
 			value, used = self.checkTopUp(code)
 			code = code.decode('utf-8')
@@ -306,6 +373,8 @@ class Database:
 	@return true if increase or deduction is valid, false if value below 0 afterwards or unsuccessful
 	"""
 	def changeCardValue(self, hash, value):
+		if not self.connect():
+			return False
 		v = self.getCard(hash)
 		if v is None:
 			return False
@@ -322,6 +391,8 @@ class Database:
 	"""Increase or reduce product stock
 	"""
 	def changeProductStock(self, ean, amount):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('UPDATE products SET stock = stock + (%s) WHERE ean = %s', (amount, ean))
 			self.db.commit()
@@ -332,6 +403,8 @@ class Database:
 	"""Web frontend, change product price
 	"""
 	def changeProductPrice(self, ean, price):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('UPDATE products SET price = (%s) WHERE ean = %s', (price, ean))
 			self.db.commit()
@@ -342,6 +415,8 @@ class Database:
 	"""Buy a product, deduct stock and card value, create transaction
 	"""
 	def buyProduct(self, cardhash, ean):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('SELECT name, price FROM products WHERE ean = %s', (ean, ))
 			result = self.cursor.fetchone()
@@ -365,6 +440,8 @@ class Database:
 	"""Web frontend, add new product
 	"""
 	def addProduct(self, ean, name, price, stock):
+		if not self.connect():
+			return False
 		try:
 			self.cursor.execute('INSERT INTO products (ean, name, price, stock) VALUES (%s, %s, %s, %s)', (ean, name, price, stock))
 			self.db.commit()

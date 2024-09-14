@@ -19,7 +19,7 @@ db = database.Database(
 	database=settings.db_database
 )
 
-app  = server.app
+app = server.app
 server.db = db
 value = 0
 
@@ -58,6 +58,11 @@ def ui():
 		db.ping()
 	print(uid)
 	disp.dim(100)
+	if not db.connect():
+		disp.showNoConnection()
+		led.red()
+		time.sleep(5)
+		return
 
 	cancel = 0
 	value = db.getCard(uid)
