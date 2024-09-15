@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Export{% endblock%}
+{% block content %}
+
+
+<form action="history/transactions" method="POST">
+<input type="date" name="from_date" /> - <input type="date" name="to_date" />
+<input type="submit" value="Transaktionen exportieren" />
+</form>
+<br>
+<form action="history/topups" method="POST">
+<input type="date" name="from_date" /> - <input type="date" name="to_date" />
+<input type="submit" value="Einzahlungen exportieren" />
+</form>
+
+{% endblock%}

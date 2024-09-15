@@ -17,8 +17,13 @@
 {% if admin.username != username %}
   <form class="admin row" action="/admin" method="post">
     <div class="username col">{{admin.username}}<input type="hidden" name="username" value="{{admin.username}}"></div>
-    <div class="col">{% if admin.otp %}&check;{% else %}&times;{% endif %} <input type="submit" name="reset" value="OTP zurücksetzen" /></div>
-    <div class="col"><input type="submit" name="delete" onclick="" value="Löschen" /></div>
+    <div class="col">{% if admin.otp %}&check;{% else %}&times;{% endif %}</div>
+    <div class="col"><input type="submit" name="reset" value="OTP zurücksetzen" /></div>
+    {% if admin.active %}
+    <div class="col"><input type="submit" style="color:red" name="deactivate" onclick="" value="Deaktivieren" /></div>
+    {% else %}
+    <div class="col"><input type="submit" style="color:green" name="reactivate" onclick="" value="Reaktivieren" /></div>
+    {% endif %}
   </form>
 {% endif %}
 {% endfor %}

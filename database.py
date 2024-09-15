@@ -58,7 +58,7 @@ class Database:
 	def checkAdmin(self, name, password):
 		if not self.connect():
 			return False
-		self.cursor.execute('SELECT password FROM admins WHERE username = %s', (name, ))
+		self.cursor.execute('SELECT password FROM admins WHERE username = %s AND active = 1', (name, ))
 		try:
 			result = self.cursor.fetchone()
 			return bcrypt.checkpw(password.encode('utf-8'), result['password'].encode('utf-8'))
@@ -79,13 +79,27 @@ class Database:
 		except mysql.connector.Error as error:
 			return False
 
-	"""Web frontend, remove user
+	"""Web frontend, deactivate user
 	"""
-	def deleteAdmin(self, name):
+	def deactivateAdmin(self, name, current_user):
 		if not self.connect():
 			return False
 		try:
-			self.cursor.execute('DELETE FROM admins WHERE username=%s', (name, ))
+			self.cursor.execute('UPDATE admins SET active = 0 WHERE username=%s', (name, ))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Useraccount %s reactivated")', (current_user, name))
+			self.db.commit()
+			return True
+		except mysql.connector.Error as error:
+			return False
+
+	"""Web frontend, reactivate user
+	"""
+	def reactivateAdmin(self, name, current_user):
+		if not self.connect():
+			return False
+		try:
+			self.cursor.execute('UPDATE admins SET active = 1 WHERE username=%s', (name, ))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Useraccount %s reactivated")', (current_user, name))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:
@@ -110,7 +124,7 @@ class Database:
 	def getAdmins(self):
 		if not self.connect():
 			return []
-		self.cursor.execute('SELECT username, otp_validated as otp FROM admins')
+		self.cursor.execute('SELECT username, otp_validated as otp, active FROM admins')
 		try:
 			results = self.cursor.fetchall()
 			return results
@@ -121,11 +135,12 @@ class Database:
 
 	User needs to login after the reset and complete the OTP setup
 	"""
-	def resetOTP(self, name):
+	def resetOTP(self, name, current_user):
 		if not self.connect():
 			return False
 		try:
 			self.cursor.execute('UPDATE admins SET otps=NULL, otp_validated=0 WHERE username = %s', (name, ))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "OTP reset for user %s")', (current_user, name))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:
@@ -157,6 +172,7 @@ class Database:
 			return False
 		try:
 			self.cursor.execute('UPDATE admins SET otps = %s WHERE username = %s', (secret, name))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "OTP set")', (name,))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:
@@ -183,6 +199,7 @@ class Database:
 			return False
 		try:
 			self.cursor.execute('UPDATE admins SET otp_validated = 1 WHERE username = %s', (name,))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "OTP verified")', (name,))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:
@@ -288,6 +305,30 @@ class Database:
 		except mysql.connector.Error as error:
 			return []
 		return []
+	
+	"""Web frontend, get transaction history
+	"""
+	def getHistoryTransactions(self, from_date, to_date):
+		if not self.connect():
+			return []
+		try:
+			self.cursor.execute('SELECT t.ean, p.name, t.value, t.tdate FROM transactions t JOIN products p ON t.ean = p.ean WHERE tdate >= %s AND tdate <= %s ORDER BY tdate ASC', (from_date, to_date))
+			results = self.cursor.fetchall()
+			return results
+		except mysql.connector.Error as error:
+			return []
+	
+	"""Web frontend, get topup history
+	"""
+	def getHistoryTopups(self, from_date, to_date):
+		if not self.connect():
+			return []
+		try:
+			self.cursor.execute('SELECT tdate, value FROM transactions WHERE tdate >= %s AND tdate <= %s AND ean IS NULL AND exchange_with_uid IS NULL ORDER BY tdate ASC', (from_date, to_date))
+			results = self.cursor.fetchall()
+			return results
+		except mysql.connector.Error as error:
+			return []
 
 	"""Web frontend, get total credits of all cards
 	"""
@@ -317,13 +358,14 @@ class Database:
 
 	"""Web frontend, generate topup hash for a given amount
 	"""
-	def generateTopUp(self, amount):
+	def generateTopUp(self, amount, username):
 		if not self.connect():
 			return None
 		try:
 			code = uuid.uuid4().hex
 			print(code)
-			self.cursor.execute('INSERT INTO topups (code, value, created_on) VALUES (%s, %s, NOW())', (code, amount))
+			self.cursor.execute('INSERT INTO topups (code, value, created_on, created_by) VALUES (%s, %s, NOW(), %s)', (code, amount, username))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Topupcode %s generated")', (current_user, code))
 			self.db.commit()
 			return code
 		except TypeError:
@@ -388,13 +430,16 @@ class Database:
 			return False
 		return self.cursor.rowcount != 0
 
-	"""Increase or reduce product stock
+	"""Web frontend, increase or reduce product stock
 	"""
-	def changeProductStock(self, ean, amount):
+	def changeProductStock(self, ean, amount, current_user):
 		if not self.connect():
 			return False
+		if amount is None or amount == 0:
+			return True
 		try:
 			self.cursor.execute('UPDATE products SET stock = stock + (%s) WHERE ean = %s', (amount, ean))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Changed stock of product %s by %s")', (current_user, ean, int(amount)))
 			self.db.commit()
 			return self.cursor.rowcount != 0
 		except mysql.connector.errors.DataError:
@@ -402,11 +447,15 @@ class Database:
 
 	"""Web frontend, change product price
 	"""
-	def changeProductPrice(self, ean, price):
+	def changeProductPrice(self, ean, price, current_user):
 		if not self.connect():
 			return False
+		name, old_price = self.getProduct(ean)
+		if float(old_price) == float(price):
+			return True
 		try:
 			self.cursor.execute('UPDATE products SET price = (%s) WHERE ean = %s', (price, ean))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Changed price of product %s from %s to %s")', (current_user, ean, old_price, float(price)))
 			self.db.commit()
 			return self.cursor.rowcount != 0
 		except mysql.connector.errors.DataError:

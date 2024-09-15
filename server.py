@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, send_file, session, url_for, redirect
+from flask import Flask, Response, render_template, request, send_file, session, url_for, redirect
 from markupsafe import escape
 from flask_qrcode import QRcode
+import datetime
 import uuid
 import pyotp
 import socket
@@ -47,10 +48,56 @@ def topup():
 			value = float(request.form['value'])
 			if value <= 0:
 				raise Exception('Less than zero')
-			code = db.generateTopUp(value)
+			code = db.generateTopUp(value, session['username'])
 		except Exception as e:
 			app.logger.critical(e)
 	return render_template('topup.html', code=code, value=value, codes=[], totalvalue=db.getTopupBalance(), admin=True)
+
+@app.route('/history/transactions', methods=['POST'])
+def getHistoryTransactions():
+	if not isAdmin():
+		return redirect(url_for('login'))
+	if not isValidOTP():
+		return redirect(url_for('otp'))
+	from_date = request.form['from_date']
+	to_date = request.form['to_date']
+	if to_date is None or to_date == '':
+		to_date = '%s' % (datetime.datetime.today().date(), )
+	
+	transactions = db.getHistoryTransactions(from_date, to_date)
+	csv = '"Date","Value","EAN","Product"'
+	for transaction in transactions:
+		csv += '\n"%s",%.2f,"%s","%s"' % (transaction['tdate'], transaction['value'], transaction['ean'], transaction['name'])
+	return Response(
+		csv,
+		mimetype="text/csv",
+		headers={"Content-disposition":
+				"attachment; filename=transactions_%s_%s.csv" % (from_date, to_date)
+		}
+	)
+
+@app.route('/history/topups', methods=['POST'])
+def getHistoryTopup():
+	if not isAdmin():
+		return redirect(url_for('login'))
+	if not isValidOTP():
+		return redirect(url_for('otp'))
+	from_date = request.form['from_date']
+	to_date = request.form['to_date']
+	if to_date is None or to_date == '':
+		to_date = '%s' % (datetime.datetime.today().date(), )
+	
+	transactions = db.getHistoryTopups(from_date, to_date)
+	csv = '"Date","Value"'
+	for transaction in transactions:
+		csv += '\n"%s",%.2f' % (transaction['tdate'], transaction['value'])
+	return Response(
+		csv,
+		mimetype="text/csv",
+		headers={"Content-disposition":
+				"attachment; filename=topups_%s_%s.csv" % (from_date, to_date)
+		}
+	)
 
 @app.route('/otp', methods=['GET','POST'])
 def otp():
@@ -123,6 +170,14 @@ def page_cards():
 	cards = db.getCards()
 	return render_template('cards.html', totalvalue=value, cards=cards, admin=True)
 
+@app.route('/export')
+def page_export():
+	if not isAdmin():
+		return redirect(url_for('login'))
+	if not isValidOTP():
+		return redirect(url_for('otp'))
+	return render_template('export.html', admin=True)
+
 @app.route('/products', methods=['GET','POST'])
 def page_products():
 	if request.method == 'POST':
@@ -132,8 +187,8 @@ def page_products():
 			return redirect(url_for('otp'))
 		if 'restock' in request.form:
 			try:
-				db.changeProductStock(request.form['ean'], request.form['restock'])
-				db.changeProductPrice(request.form['ean'], request.form['price'])
+				db.changeProductStock(request.form['ean'], request.form['restock'], session['username'])
+				db.changeProductPrice(request.form['ean'], request.form['price'], session['username'])
 			except Exception as e:
 				app.logger.critical(e)
 		elif 'name' in request.form:
@@ -175,16 +230,22 @@ def page_admin():
 			else:
 				if not db.changePassword(session['username'], request.form['password']):
 					error = "Konnte Passwort nicht ändern"
-		elif 'delete' in request.form:
+		elif 'deactivate' in request.form:
 			try:
 				if request.form['username'] != session['username']:
-					db.deleteAdmin(request.form['username'])
+					db.deactivateAdmin(request.form['username'], session['username'])
+			except Exception as e:
+				app.logger.critical(e)
+		elif 'reactivate' in request.form:
+			try:
+				if request.form['username'] != session['username']:
+					db.reactivateAdmin(request.form['username'], session['username'])
 			except Exception as e:
 				app.logger.critical(e)
 		elif 'reset' in request.form:
 			try:
 				if request.form['username'] != session['username']:
-					db.resetOTP(request.form['username'])
+					db.resetOTP(request.form['username'], session['username'])
 			except Exception as e:
 				app.logger.critical(e)
 	admins = db.getAdmins()
