@@ -114,6 +114,7 @@ class Database:
 			salt = bcrypt.gensalt()
 			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
 			self.cursor.execute('UPDATE admins SET password=%s WHERE username=%s', (hash, name))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Password changed")', (name,))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:
@@ -488,11 +489,12 @@ class Database:
 
 	"""Web frontend, add new product
 	"""
-	def addProduct(self, ean, name, price, stock):
+	def addProduct(self, ean, name, price, stock, current_user):
 		if not self.connect():
 			return False
 		try:
 			self.cursor.execute('INSERT INTO products (ean, name, price, stock) VALUES (%s, %s, %s, %s)', (ean, name, price, stock))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New product: %s, %s for %s. Initial stock: %s")', (current_user, ean, name, price, stock))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:

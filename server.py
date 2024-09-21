@@ -193,7 +193,7 @@ def page_products():
 				app.logger.critical(e)
 		elif 'name' in request.form:
 			try:
-				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form.get('stock', 0))
+				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form.get('stock', 0), session['username'])
 			except Exception as e:
 				app.logger.critical(e)
 	products = db.getProducts()
