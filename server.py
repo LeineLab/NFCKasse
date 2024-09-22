@@ -86,7 +86,6 @@ def getHistoryTopup():
 	to_date = request.form['to_date']
 	if to_date is None or to_date == '':
 		to_date = '%s' % (datetime.datetime.today().date(), )
-	
 	transactions = db.getHistoryTopups(from_date, to_date)
 	csv = '"Date","Value"'
 	for transaction in transactions:
