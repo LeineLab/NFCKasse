@@ -18,9 +18,15 @@ db = database.Database(
 	password=settings.db_password,
 	database=settings.db_database
 )
+server_db = database.Database(
+	host=settings.db_host,
+	user=settings.db_user,
+	password=settings.db_password,
+	database=settings.db_database
+)
 
 app = server.app
-server.db = db
+server.db = server_db
 value = 0
 
 def buttonLoop(timeout = 20, countdown_button = -1):
