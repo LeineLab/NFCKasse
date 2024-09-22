@@ -1,3 +1,4 @@
+#!/opt/kasse/venv/bin/python3
 
 import serial
 import RPi.GPIO as GPIO

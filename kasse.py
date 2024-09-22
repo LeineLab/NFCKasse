@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/opt/kasse/venv/bin/python3
 
 import server, led, buzzer, scanner, tag, display, buttons, database, time, logging, settings
 from threading import Thread

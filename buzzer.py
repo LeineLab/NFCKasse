@@ -1,3 +1,4 @@
+#!/opt/kasse/venv/bin/python3
 
 #based on https://www.circuitbasics.com/how-to-use-buzzers-with-raspberry-pi/
 import time

@@ -1,3 +1,5 @@
+#!/opt/kasse/venv/bin/python3
+
 import mysql.connector
 import uuid
 import bcrypt

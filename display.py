@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/opt/kasse/venv/bin/python3
 
 import busio
 import digitalio
