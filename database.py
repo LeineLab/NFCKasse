@@ -18,7 +18,7 @@ class Database:
 			try:
 				self.db.ping(True)
 				return True
-			except InterfaceError:
+			except mysql.connector.errors.InterfaceError:
 				pass
 		try:
 			self.db = mysql.connector.connect(
@@ -38,7 +38,7 @@ class Database:
 		try:
 			self.db.ping(True)
 			return True
-		except InterfaceError:
+		except mysql.connector.errors.InterfaceError:
 			return False
 
 	"""Web frontend check, if user exists
