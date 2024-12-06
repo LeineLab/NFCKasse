@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Produktalias{% endblock%}
+{% block content %}
+
+<div class="table">
+
+  <div class="product header row">
+    <div class="ean col">EAN</div>
+    <div class="ean col">Ziel-EAN</div>
+    <div class="name col">Name</div>
+{% if admin  %}
+    <div class="col">&nbsp;</div>
+{% endif %}
+  </div>
+
+{% for alias in product_alias %}
+  <div class="product row">
+    <div class="ean col">{{alias.ean}}</div>
+    <div class="ean col">{{alias.target}}</div>
+    <div class="name col">{{alias.name}}</div>
+{% if admin %}<div class="col">&nbsp;</div>{% endif %}
+  </div>
+{% endfor %}
+
+{% if admin %}
+  <form action="/product_alias" method="post" class="product row">
+    <div class="ean col"><input type="text" name="ean" /></div>
+    <div class="eanname col"><select name="target">
+{% for product in products %}
+      <option value="{{product.ean}}">{{product.name}} ({{product.ean}})</option>
+{% endfor %}
+    </select></div>    
+    <div class="col"><input type="submit" value="Hinzufügen" /></div>
+  </form>
+{% endif %}
+
+</div>
+
+{% endblock%}

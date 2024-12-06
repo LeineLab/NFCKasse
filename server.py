@@ -63,7 +63,7 @@ def getHistoryTransactions():
 	to_date = request.form['to_date']
 	if to_date is None or to_date == '':
 		to_date = '%s' % (datetime.datetime.today().date(), )
-	
+
 	transactions = db.getHistoryTransactions(from_date, to_date)
 	csv = '"Date","Value","EAN","Product"'
 	for transaction in transactions:
@@ -206,6 +206,26 @@ def page_products():
 		sales_30d=sales_30d,
 		revenue_7d=revenue_7d,
 		revenue_30d=revenue_30d,
+		admin=isAdmin()
+	)
+
+@app.route('/product_alias', methods=['GET','POST'])
+def page_product__alias():
+	if request.method == 'POST':
+		if not isAdmin():
+			return redirect(url_for('login'))
+		if not isValidOTP():
+			return redirect(url_for('otp'))
+		elif 'target' in request.form:
+			try:
+				db.addProductAlias(request.form['ean'], request.form['target'], session['username'])
+			except Exception as e:
+				app.logger.critical(e)
+	products = db.getProducts()
+	product_alias = db.getProductAlias()
+	return render_template('product_alias.html',
+		products=products,
+		product_alias=product_alias,
 		admin=isAdmin()
 	)
 

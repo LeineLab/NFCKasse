@@ -79,6 +79,22 @@ CREATE TABLE `products` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `product_alias`
+--
+
+DROP TABLE IF EXISTS `product_alias`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product_alias` (
+  `ean` varchar(20) NOT NULL,
+  `target` varchar(20) NOT NULL,
+  PRIMARY KEY (`ean`),
+  KEY `target` (`target`),
+  CONSTRAINT `product_alias_ibfk_1` FOREIGN KEY (`target`) REFERENCES `products` (`ean`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `topups`
 --
 

@@ -28,6 +28,9 @@ input {
 .product .ean {
 	width: 120px;
 }
+.product .eanname {
+	width: 320px;
+}
 .product .ean input {
 	width: 110px;
 }

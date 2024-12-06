@@ -120,7 +120,7 @@ def ui():
 			if buttonLoop() != 1:
 				cancel = 1
 		else:
-			print(bc)
+			bc = db.getAlias(bc)
 			name, price = db.getProduct(bc)
 			if name is None:
 				topupval, isused = db.checkTopUp(bc)

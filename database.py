@@ -208,6 +208,22 @@ class Database:
 		except mysql.connector.Error as error:
 			return False
 
+	"""Get referenced EAN for alias EAN
+
+	@returns EAN
+	"""
+	def getAlias(self, ean):
+		if not self.connect():
+			return ean
+		self.cursor.execute('SELECT target FROM product_alias WHERE ean = %s', (ean, ))
+		try:
+			result = self.cursor.fetchone()
+			return result['target']
+		except TypeError:
+			return ean
+		except mysql.connector.Error as error:
+			return ean
+
 	"""Get product for EAN
 
 	@returns Tuple of (name, price)
@@ -224,6 +240,20 @@ class Database:
 		except mysql.connector.Error as error:
 			return (None, None)
 
+	"""Web frontend, get list of aliased products
+	"""
+	def getProductAlias(self):
+		if not self.connect():
+			return []
+		self.cursor.execute('SELECT a.ean, a.target, p.name FROM product_alias a LEFT JOIN products p ON a.target = p.ean')
+		try:
+			results = self.cursor.fetchall()
+			return results
+		except TypeError:
+			return []
+		except mysql.connector.Error as error:
+			return []
+
 	"""Web frontend, get list of products
 	"""
 	def getProducts(self):
@@ -237,9 +267,9 @@ class Database:
 			return []
 		except mysql.connector.Error as error:
 			return []
-	
+
 	"""Web frontend, get maximum sales in last n days
-	
+
 	@param duration Duration to get sales for in days
 	"""
 	def getProductMaxSales(self, duration):
@@ -253,9 +283,9 @@ class Database:
 			return None
 		except mysql.connector.Error as error:
 			return None
-	
+
 	"""Web frontend, get overall revenue in last n days
-	
+
 	@param duration Duration to get revenue for in days
 	"""
 	def getRevenue(self, duration):
@@ -308,7 +338,7 @@ class Database:
 		except mysql.connector.Error as error:
 			return []
 		return []
-	
+
 	"""Web frontend, get transaction history
 	"""
 	def getHistoryTransactions(self, from_date, to_date):
@@ -320,7 +350,7 @@ class Database:
 			return results
 		except mysql.connector.Error as error:
 			return []
-	
+
 	"""Web frontend, get topup history
 	"""
 	def getHistoryTopups(self, from_date, to_date):
@@ -497,6 +527,20 @@ class Database:
 		try:
 			self.cursor.execute('INSERT INTO products (ean, name, price, stock) VALUES (%s, %s, %s, %s)', (ean, name, price, stock))
 			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New product: %s, %s for %s. Initial stock: %s")', (current_user, ean, name, price, stock))
+			self.db.commit()
+			return True
+		except mysql.connector.Error as error:
+			print(error)
+			return False
+
+	"""Web frontend, add new product alias
+	"""
+	def addProductAlias(self, ean, target, current_user):
+		if not self.connect():
+			return False
+		try:
+			self.cursor.execute('INSERT INTO product_alias (ean, target) VALUES (%s, %s)', (ean, target))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New product alias: %s -> %s")', (current_user, ean, target))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:
