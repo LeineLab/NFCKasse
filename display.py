@@ -51,7 +51,6 @@ class Display:
 	"""
 	def showOptions(self, ok, cancel):
 		text = ok
-		print(text)
 		(t1, t2, font_width, font_height) = self.fontsmall.getbbox(text)
 		self.draw.text((0, self.HEIGHT - font_height), text, font=self.fontsmall, fill=(0,200,0))
 		text = cancel
@@ -86,9 +85,11 @@ class Display:
 
 	"""Show prompt to present tag
 	"""
-	def showTag(self):
+	def showTag(self, guest):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte vorhalten", font=self.font, fill=(255,255,255))
+		if guest:
+			self.showOptions("","Gast")
 		self.display.image(self.image)
 
 	"""Show prompt to present tag again

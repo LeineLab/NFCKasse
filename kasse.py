@@ -53,7 +53,7 @@ def worker():
 		ui()
 
 def ui():
-	disp.showTag()
+	disp.showTag(settings.uid_guest is not None)
 	uid = None
 	idle = time.time() + 30
 	led.clear()
@@ -61,6 +61,10 @@ def ui():
 		uid = card.get()
 		if time.time() > idle:
 			disp.dim(20)
+		if uid is None:
+			pressed = btns.getPressed()
+			if pressed[1]:
+				uid = settings.uid_guest
 		db.ping()
 	print(uid)
 	disp.dim(100)
