@@ -571,7 +571,7 @@ class Database:
 		if not self.connect():
 			return False
 		try:
-			self.cursor.execute('INSERT INTO product_categories (name) VALUES (%s)', (name))
+			self.cursor.execute('INSERT INTO product_categories (name) VALUES (%s)', (name, ))
 			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New category: %s")', (current_user, name))
 			self.db.commit()
 			return True
