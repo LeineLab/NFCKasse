@@ -63,6 +63,19 @@ CREATE TABLE `cards` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `product_categories`
+--
+
+DROP TABLE IF EXISTS `product_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `product_categories` (
+  `name` varchar(30) NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `products`
 --
 
@@ -74,7 +87,10 @@ CREATE TABLE `products` (
   `name` varchar(30) NOT NULL,
   `price` decimal(4,2) NOT NULL,
   `stock` int(10) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`ean`)
+  `category` varchar(30) DEFAULT NULL,
+  PRIMARY KEY (`ean`),
+  KEY `category` (`category`),
+  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category`) REFERENCES `product_categories` (`name`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

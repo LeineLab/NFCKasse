@@ -240,6 +240,22 @@ class Database:
 		except mysql.connector.Error as error:
 			return (None, None)
 
+	"""Get product category for EAN
+
+	@returns category if present
+	"""
+	def getProductCategory(self, ean):
+		if not self.connect():
+			return None
+		self.cursor.execute('SELECT category FROM products WHERE ean = %s', (ean, ))
+		try:
+			result = self.cursor.fetchone()
+			return result['category']
+		except TypeError:
+			return None
+		except mysql.connector.Error as error:
+			return None
+
 	"""Web frontend, get list of aliased products
 	"""
 	def getProductAlias(self):
@@ -254,12 +270,26 @@ class Database:
 		except mysql.connector.Error as error:
 			return []
 
+	"""Web frontend, get list of product categoriess
+	"""
+	def getProductCategories(self):
+		if not self.connect():
+			return []
+		self.cursor.execute('SELECT name FROM product_categories ORDER BY name ASC')
+		try:
+			results = self.cursor.fetchall()
+			return results
+		except TypeError:
+			return []
+		except mysql.connector.Error as error:
+			return []
+
 	"""Web frontend, get list of products
 	"""
 	def getProducts(self):
 		if not self.connect():
 			return []
-		self.cursor.execute('SELECT p.ean, p.name, p.price, p.stock, IFNULL(t1.sales_7d, 0) as sales_7d, IFNULL(t2.sales_30d, 0) as sales_30d FROM products p LEFT JOIN (SELECT count(tid) AS sales_7d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 7 DAY) GROUP BY ean) t1 ON p.ean = t1.ean LEFT JOIN (SELECT count(tid) AS sales_30d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 30 DAY) GROUP BY ean) t2 ON p.ean = t2.ean')
+		self.cursor.execute('SELECT p.ean, p.name, p.price, p.stock, p.category, IFNULL(t1.sales_7d, 0) as sales_7d, IFNULL(t2.sales_30d, 0) as sales_30d FROM products p LEFT JOIN (SELECT count(tid) AS sales_7d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 7 DAY) GROUP BY ean) t1 ON p.ean = t1.ean LEFT JOIN (SELECT count(tid) AS sales_30d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 30 DAY) GROUP BY ean) t2 ON p.ean = t2.ean')
 		try:
 			results = self.cursor.fetchall()
 			return results
@@ -494,6 +524,22 @@ class Database:
 		except mysql.connector.errors.DataError:
 			return False
 
+	"""Web frontend, change product category
+	"""
+	def changeProductCategory(self, ean, category, current_user):
+		if not self.connect():
+			return False
+		old_category = self.getProductCategory(ean)
+		if old_category == category:
+			return True
+		try:
+			self.cursor.execute('UPDATE products SET category = (%s) WHERE ean = %s', (category, ean))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Changed category of product %s from %s to %s")', (current_user, ean, old_category, category))
+			self.db.commit()
+			return self.cursor.rowcount != 0
+		except mysql.connector.errors.DataError:
+			return False
+
 	"""Buy a product, deduct stock and card value, create transaction
 	"""
 	def buyProduct(self, cardhash, ean):
@@ -519,14 +565,28 @@ class Database:
 			self.db.rollback()
 		return False
 
-	"""Web frontend, add new product
+	"""Web frontend, add new product category
 	"""
-	def addProduct(self, ean, name, price, stock, current_user):
+	def addCategory(self, name, current_user):
 		if not self.connect():
 			return False
 		try:
-			self.cursor.execute('INSERT INTO products (ean, name, price, stock) VALUES (%s, %s, %s, %s)', (ean, name, price, stock))
-			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New product: %s, %s for %s. Initial stock: %s")', (current_user, ean, name, price, stock))
+			self.cursor.execute('INSERT INTO product_categories (name) VALUES (%s)', (name))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New category: %s")', (current_user, name))
+			self.db.commit()
+			return True
+		except mysql.connector.Error as error:
+			print(error)
+			return False
+
+	"""Web frontend, add new product
+	"""
+	def addProduct(self, ean, name, price, stock, category, current_user):
+		if not self.connect():
+			return False
+		try:
+			self.cursor.execute('INSERT INTO products (ean, name, price, stock, category) VALUES (%s, %s, %s, %s, %s)', (ean, name, price, stock, category))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "New product: %s, %s for %s in %s. Initial stock: %s")', (current_user, ean, name, price, category, stock))
 			self.db.commit()
 			return True
 		except mysql.connector.Error as error:

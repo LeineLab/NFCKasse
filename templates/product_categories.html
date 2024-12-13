@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Produktkategorien{% endblock%}
+{% block content %}
+
+<div class="table">
+
+  <div class="product header row">
+    <div class="category col">Kategorie</div>
+{% if admin %}
+    <div class="col">&nbsp;</div>
+{% endif %}
+  </div>
+
+{% for category in categories %}
+  <div class="product row">
+    <div class="category col">{{category.name}}</div>
+{% if admin %}<div class="col">&nbsp;</div>{% endif %}
+  </div>
+{% endfor %}
+
+{% if admin %}
+  <form action="/product_categories" method="post" class="product row">
+    <div class="category col"><input type="text" name="name" /></div>
+    <div class="col"><input type="submit" value="Hinzufügen" /></div>
+  </form>
+{% endif %}
+
+</div>
+
+{% endblock%}

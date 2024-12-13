@@ -1,0 +1,14 @@
+[
+{%- set item = namespace(value=0) -%}
+{%- for product in products -%}
+{%- if category is none or category == product.category -%}
+{%- if item.value != 0 %},{% endif %}
+  {
+    "ean": "{{product.ean}}",
+    "name": "{{product.name}}",
+    "price": {{product.price}},
+    "stock": {{product.stock}},
+    "category": "{{product.category}}"
+  }{% set item.value = item.value + 1 %}{%- endif -%}
+{%- endfor %}
+]

@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, request, send_file, session, url_for, redirect
+from flask import Flask, Response, render_template, request, send_file, session, url_for, redirect, make_response
 from markupsafe import escape
 from flask_qrcode import QRcode
 import datetime
@@ -173,7 +173,7 @@ def page_cards():
 def page_export():
 	if not isAdmin():
 		return redirect(url_for('login'))
-	if not isValidOTP():
+	elif not isValidOTP():
 		return redirect(url_for('otp'))
 	return render_template('export.html', admin=True)
 
@@ -182,26 +182,29 @@ def page_products():
 	if request.method == 'POST':
 		if not isAdmin():
 			return redirect(url_for('login'))
-		if not isValidOTP():
+		elif not isValidOTP():
 			return redirect(url_for('otp'))
-		if 'restock' in request.form:
+		elif 'restock' in request.form:
 			try:
 				db.changeProductStock(request.form['ean'], request.form['restock'], session['username'])
 				db.changeProductPrice(request.form['ean'], request.form['price'], session['username'])
+				db.changeProductCategory(request.form['ean'], request.form['category'], session['username'])
 			except Exception as e:
 				app.logger.critical(e)
 		elif 'name' in request.form:
 			try:
-				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form.get('stock', 0), session['username'])
+				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form.get('stock', 0), request.form.get('category'), session['username'])
 			except Exception as e:
 				app.logger.critical(e)
 	products = db.getProducts()
+	categories = db.getProductCategories()
 	sales_7d = db.getProductMaxSales(7)
 	sales_30d = db.getProductMaxSales(30)
 	revenue_7d = db.getRevenue(7)
 	revenue_30d = db.getRevenue(30)
 	return render_template('products.html',
 		products=products,
+		categories=categories,
 		sales_7d=sales_7d,
 		sales_30d=sales_30d,
 		revenue_7d=revenue_7d,
@@ -209,12 +212,22 @@ def page_products():
 		admin=isAdmin()
 	)
 
+@app.route('/products.json', methods=['GET'])
+def page_product_json():
+	products = db.getProducts()
+	resp = make_response(render_template('products.json',
+		products=products,
+		category=request.args.get('category', None)
+	))
+	resp.headers['Content-Type'] = "text/json; charset=utf-8"
+	return resp
+
 @app.route('/product_alias', methods=['GET','POST'])
-def page_product__alias():
+def page_product_alias():
 	if request.method == 'POST':
 		if not isAdmin():
 			return redirect(url_for('login'))
-		if not isValidOTP():
+		elif not isValidOTP():
 			return redirect(url_for('otp'))
 		elif 'target' in request.form:
 			try:
@@ -226,6 +239,24 @@ def page_product__alias():
 	return render_template('product_alias.html',
 		products=products,
 		product_alias=product_alias,
+		admin=isAdmin()
+	)
+
+@app.route('/product_categories', methods=['GET','POST'])
+def page_product_categories():
+	if request.method == 'POST':
+		if not isAdmin():
+			return redirect(url_for('login'))
+		elif not isValidOTP():
+			return redirect(url_for('otp'))
+		elif 'name' in request.form:
+			try:
+				db.addProductCategory(request.form['name'], session['username'])
+			except Exception as e:
+				app.logger.critical(e)
+	categories = db.getProductCategories()
+	return render_template('product_categories.html',
+		categories=categories,
 		admin=isAdmin()
 	)
 
