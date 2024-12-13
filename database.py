@@ -567,7 +567,7 @@ class Database:
 
 	"""Web frontend, add new product category
 	"""
-	def addCategory(self, name, current_user):
+	def addProductCategory(self, name, current_user):
 		if not self.connect():
 			return False
 		try:
