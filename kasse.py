@@ -1,6 +1,6 @@
 #!/opt/kasse/venv/bin/python3
 
-import server, led, buzzer, scanner, tag, display, buttons, database, time, logging, settings
+import server, led, buzzer, scanner, tag, display, buttons, database, time, logging, settings, homeassistant
 from threading import Thread
 
 PIN_SCANNER_ACTIVE  = 18
@@ -24,6 +24,7 @@ server_db = database.Database(
 	password=settings.db_password,
 	database=settings.db_database
 )
+ha = homeassistant.HomeAssistantMQTT()
 
 app = server.app
 server.db = server_db
@@ -49,10 +50,14 @@ def buttonLoop(timeout = 20, countdown_button = -1):
 	return -1
 
 def worker():
+	products = db.getProducts()
+	for product in products:
+		ha.updateProduct(product)
 	while True:
 		ui()
 
 def ui():
+	ha.setState('idle')
 	disp.showTag(settings.uid_guest is not None)
 	uid = None
 	idle = time.time() + 30
@@ -77,6 +82,7 @@ def ui():
 	cancel = 0
 	value = db.getCard(uid)
 	if value is None:
+		ha.setState('signup')
 		disp.showTagNotKnown()
 		led.red()
 		if buttonLoop() == 1:
@@ -96,6 +102,7 @@ def ui():
 			cancel = 1
 
 	while not cancel:
+		ha.setState('scanning')
 		buzz.beep(buzz.A5, 0.15)
 		disp.showScan(value)
 		led.white()
@@ -115,26 +122,31 @@ def ui():
 		if cancel:
 			break
 		if bc == None:
+			ha.setState('waiting')
 			disp.showNoCode()
 			led.blue()
 			if buttonLoop() != 1:
 				cancel = 1
 		else:
 			bc = db.getAlias(bc)
-			name, price = db.getProduct(bc)
-			if name is None:
+			product = db.getProduct(bc)
+			if product['name'] is None:
+				ha.setState('waiting')
 				topupval, isused = db.checkTopUp(bc)
 				if topupval == None:
+					ha.setState('waiting')
 					led.purple()
 					disp.showNoProduct()
 					if buttonLoop(10, 0) != 1:
 						cancel = 1
 				elif isused:
+					ha.setState('cancelling')
 					led.red()
 					disp.showTopUpUsed()
 					if buttonLoop(10) != 1:
 						cancel = 1
 				else:
+					ha.setState('topup')
 					led.yellow()
 					disp.showTopUp(topupval)
 					b =  buttonLoop(10)
@@ -156,14 +168,17 @@ def ui():
 							led.red()
 						time.sleep(1)
 			else:
+				ha.setState('buying')
+				ha.updateProduct(product)
 				led.yellow()
-				disp.showProduct(name, price, value)
-				if price > value:
+				disp.showProduct(product['name'], product['price'], value)
+				if product['price'] > value:
 					buzz.abort()
 				ret = buttonLoop(5, 1)
 				if ret == 1 or ret == -1:
-					if price <= value:
+					if product['price'] <= value:
 						db.buyProduct(uid, bc)
+						ha.updateProduct(db.getProduct(bc))
 						#print(db.changeCardValue(uid, -price))
 						#print(db.reduceProductStock(bc, 1))
 						value = db.getCard(uid)
@@ -176,7 +191,7 @@ def ui():
 				#	led.red()
 				#	time.sleep(1)
 				else:
-					if price > value:
+					if product['price'] > value:
 						cancel = 1
 					else:
 						led.red()

@@ -231,14 +231,14 @@ class Database:
 	def getProduct(self, ean):
 		if not self.connect():
 			return (None, None)
-		self.cursor.execute('SELECT name, price FROM products WHERE ean = %s', (ean, ))
+		self.cursor.execute('SELECT ean, name, price, stock FROM products WHERE ean = %s', (ean, ))
 		try:
 			result = self.cursor.fetchone()
-			return (result['name'], float(result['price']))
+			return result
 		except TypeError:
-			return (None, None)
+			return {"ean": ean, "name": None, "price": None, "stock": None}
 		except mysql.connector.Error as error:
-			return (None, None)
+			return {"ean": ean, "name": None, "price": None, "stock": None}
 
 	"""Get product category for EAN
 
@@ -513,12 +513,12 @@ class Database:
 	def changeProductPrice(self, ean, price, current_user):
 		if not self.connect():
 			return False
-		name, old_price = self.getProduct(ean)
-		if float(old_price) == float(price):
+		product = self.getProduct(ean)
+		if float(product['price']) == float(price):
 			return True
 		try:
 			self.cursor.execute('UPDATE products SET price = (%s) WHERE ean = %s', (price, ean))
-			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Changed price of product %s from %s to %s")', (current_user, ean, old_price, float(price)))
+			self.cursor.execute('INSERT INTO eventlog (user, action) VALUES (%s, "Changed price of product %s from %s to %s")', (current_user, ean, product['price'], float(price)))
 			self.db.commit()
 			return self.cursor.rowcount != 0
 		except mysql.connector.errors.DataError:
