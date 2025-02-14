@@ -89,7 +89,7 @@ class Display:
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte vorhalten", font=self.font, fill=(255,255,255))
 		if guest:
-			self.showOptions("","Gast")
+			self.showOptions("Gast","")
 		self.display.image(self.image)
 
 	"""Show prompt to present tag again

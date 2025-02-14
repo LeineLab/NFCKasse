@@ -68,7 +68,7 @@ def ui():
 			disp.dim(20)
 		if uid is None:
 			pressed = btns.getPressed()
-			if pressed[1]:
+			if pressed[0]:
 				uid = settings.uid_guest
 		db.ping()
 	print(uid)
@@ -130,7 +130,7 @@ def ui():
 		else:
 			bc = db.getAlias(bc)
 			product = db.getProduct(bc)
-			if product['name'] is None:
+			if product is None:
 				ha.setState('waiting')
 				topupval, isused = db.checkTopUp(bc)
 				if topupval == None:
