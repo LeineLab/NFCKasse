@@ -35,6 +35,8 @@ class Database:
 			return False
 
 	def ping(self):
+		if self.db is None:
+			return self.connect()
 		try:
 			self.db.ping(True)
 			return True
