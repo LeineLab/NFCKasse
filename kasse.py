@@ -70,7 +70,8 @@ def ui():
 			pressed = btns.getPressed()
 			if pressed[0]:
 				uid = settings.uid_guest
-		db.ping()
+		if db.ping():
+			ha.setBalance(db.getBalance())
 	print(uid)
 	disp.dim(100)
 	if not db.connect():
@@ -179,6 +180,7 @@ def ui():
 					if product['price'] <= value:
 						db.buyProduct(uid, bc)
 						ha.updateProduct(db.getProduct(bc))
+						ha.setBalance(db.getBalance())
 						#print(db.changeCardValue(uid, -price))
 						#print(db.reduceProductStock(bc, 1))
 						value = db.getCard(uid)

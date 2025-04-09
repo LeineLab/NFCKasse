@@ -15,6 +15,10 @@ class HomeAssistantMQTT:
 			self.device = DeviceInfo(name=settings.dev_name, manufacturer='LeineLab', model='NFC Kasse', identifiers=MAC)
 			self.stateSensor = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name='State', unique_id='nfckasse_'+self.dev_id+'_state', device=self.device)))
 			self.stateSensor.set_state('idle')
+			self.balanceSensor = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name='Balance', unique_id='nfckasse_'+self.dev_id+'_balance', device_class="monetary", unit_of_measurement="EUR", device=self.device)))
+
+	def setBalance(self, balance):
+		self.balanceSensor.set_state(balance)
 
 	def setState(self, state):
 		self.stateSensor.set_state(state)

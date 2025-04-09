@@ -399,14 +399,14 @@ class Database:
 	"""
 	def getBalance(self):
 		if not self.connect():
-			return 0
+			return float('nan')
 		try:
 			self.cursor.execute('SELECT COALESCE(SUM(value),0) as totalvalue FROM cards')
 			result = self.cursor.fetchone()
 			return result['totalvalue']
 		except mysql.connector.Error as error:
-			return 0
-		return 0
+			return float('nan')
+		return float('nan')
 
 	"""Web frontend, get total topup value not redeemed
 	"""
