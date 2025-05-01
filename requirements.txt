@@ -8,5 +8,7 @@ flask
 Flask-QRcode
 pyotp
 bcrypt
+authlib
+requests
 ha-mqtt-discoverable
 rpi-lgpio

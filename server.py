@@ -1,6 +1,8 @@
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, Response, render_template, request, send_file, session, url_for, redirect, make_response
 from markupsafe import escape
 from flask_qrcode import QRcode
+from authlib.integrations.flask_client import OAuth
 import datetime
 import uuid
 import pyotp
@@ -8,17 +10,37 @@ import socket
 import urllib.parse
 import settings
 
+
 app = Flask(__name__,
 	static_url_path='')
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 qrcode = QRcode(app)
 db = None
 
-app.secret_key = uuid.uuid4().hex
+try:
+	app.secret_key = settings.server_secret
+except AttributeError:
+	app.secret_key = uuid.uuid4().hex
 
 try:
 	domain = settings.domain
 except AttributeError:
 	domain = socket.gethostname()
+
+try:
+	oauth = OAuth(app)
+	oauth.register(
+		client_id=settings.openid_id,
+		client_secret=settings.openid_secret,
+		id_token_signing_alg_values_supported=["HS256", "RS256"],
+		name='openid',
+		server_metadata_url=settings.openid_url,
+		client_kwargs={
+			'scope': 'openid email profile'
+		}
+	)
+except AttributeError:
+	oauth = None
 
 @app.route("/")
 def index():
@@ -124,7 +146,9 @@ def otp():
 	return redirect(url_for('login'))
 
 def isValidOTP():
-	return 'otp' in session
+	if not settings.force_otp and not db.hasOTPSecret(session['username']):
+		return True
+	return 'otp' in session or 'oauth' in session
 
 def isAdmin():
 	if 'username' in session:
@@ -150,13 +174,34 @@ def login():
 				app.logger.critical("Failed to check")
 		except Exception as e:
 			app.logger.critical(e)
-		return render_template('login.html', error=True)
-	return render_template('login.html', error=False)
+		return render_template('login.html', error=True, oauth=(oauth is not None))
+	return render_template('login.html', error=False, oauth=(oauth is not None))
+
+@app.route('/oauthlogin')
+def oauthlogin():
+	if oauth is None:
+		return redirect(url_for('login'))
+	redirect_uri = url_for('auth', _external=True)
+	return oauth.openid.authorize_redirect(redirect_uri)
+
+@app.route('/auth')
+def auth():
+	try:
+		token = oauth.openid.authorize_access_token()
+		session['username'] = token['userinfo']['preferred_username']
+		session['oauth'] = True
+		# Add potential new admin
+		if not db.isAdmin(session['username']):
+			db.addAdmin(session['username'], None):
+		return redirect('/')
+	except:
+		return redirect(url_for('login'))
 
 @app.route('/logout')
 def logout():
 	session.pop('username',None)
 	session.pop('otp',None)
+	session.pop('oauth',None)
 	return redirect(url_for('index'))
 
 @app.route('/cards')

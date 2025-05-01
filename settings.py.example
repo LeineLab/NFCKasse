@@ -12,5 +12,13 @@ uid_guest = None
 # Barcodescanner
 serialport = '/dev/ttyS0'
 
+# Optional: Static server secret for sessions, otherwise generated on each start randomly
+#server_secret = 'verySecureKey'
+force_otp = false
 # Optional: domain to use for OTP
 #domain = 'kasse.hacker.space'
+
+# Optional: OpenID Config
+#openid_url = 'https://auth.hacker.space/.well-known/openid-configuration'
+#openid_id = 'clientid'
+#openid_secret = 'clientsecret'

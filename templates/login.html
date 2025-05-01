@@ -19,5 +19,8 @@ Benutzername oder Passwort falsch.
     <div class="col"><input type="submit" value="Login" /></div>
   </div>
 </form>
+{% if oauth %}
+<button onclick="location.href='/oauthlogin'" type="button">OpenID-Login</button>
+{% endif %}
 
 {% endblock%}
