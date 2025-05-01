@@ -192,9 +192,11 @@ def auth():
 		session['oauth'] = True
 		# Add potential new admin
 		if not db.isAdmin(session['username']):
+			app.logger.critical('Creating new admin for OpenID user')
 			db.addAdmin(session['username'], None)
 		return redirect('/')
 	except:
+		app.logger.exception('OpenID Login failed')
 		return redirect(url_for('login'))
 
 @app.route('/logout')
