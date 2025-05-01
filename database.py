@@ -293,6 +293,7 @@ class Database:
 	def getProducts(self):
 		if not self.connect():
 			return []
+		self.cursor.execute('COMMIT') # force update
 		self.cursor.execute('SELECT p.ean, p.name, p.price, p.stock, p.category, IFNULL(t1.sales_7d, 0) as sales_7d, IFNULL(t2.sales_30d, 0) as sales_30d FROM products p LEFT JOIN (SELECT count(tid) AS sales_7d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 7 DAY) GROUP BY ean) t1 ON p.ean = t1.ean LEFT JOIN (SELECT count(tid) AS sales_30d, ean FROM transactions WHERE ean IS NOT NULL AND tdate >= DATE_SUB(now(), INTERVAL 30 DAY) GROUP BY ean) t2 ON p.ean = t2.ean')
 		try:
 			results = self.cursor.fetchall()
