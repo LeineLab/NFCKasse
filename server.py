@@ -32,7 +32,6 @@ try:
 	oauth.register(
 		client_id=settings.openid_id,
 		client_secret=settings.openid_secret,
-		id_token_signing_alg_values_supported=["HS256", "RS256"],
 		name='openid',
 		server_metadata_url=settings.openid_url,
 		client_kwargs={
@@ -346,4 +345,4 @@ def page_admin():
 			except Exception as e:
 				app.logger.critical(e)
 	admins = db.getAdmins()
-	return render_template('admins.html', username=session['username'], admins=admins, error=error, admin=True)
+	return render_template('admins.html', username=session['username'], admins=admins, error=error, oauth=('oauth' in session),admin=True)

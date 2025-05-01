@@ -8,9 +8,15 @@
 <div class="table">
   <form class="admin row" action="/admin" method="post">
     <div class="username col">{{username}}</div>
+{% if oauth %}
+    <div class="col">-</div>
+    <div class="col">-</div>
+    <div class="col">OAuth</div>
+{% else %}
     <div class="password col"><input type="password" name="password"></div>
     <div class="password col"><input type="password" name="password2"></div>
     <div class="action col"><input type="submit" value="Ändern"></div>
+{% endif %}
   </form>
 
 {% for admin in admins %}
