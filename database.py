@@ -75,8 +75,10 @@ class Database:
 		if not self.connect():
 			return False
 		try:
-			salt = bcrypt.gensalt()
-			hash = bcrypt.hashpw(password.encode('utf-8'), salt)
+			hash = None
+			if password is not None:
+				salt = bcrypt.gensalt()
+				hash = bcrypt.hashpw(password.encode('utf-8'), salt)
 			self.cursor.execute('INSERT INTO admins (username, password) VALUES (%s, %s)', (name, hash))
 			self.db.commit()
 			return True

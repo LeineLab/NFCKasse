@@ -192,7 +192,7 @@ def auth():
 		session['oauth'] = True
 		# Add potential new admin
 		if not db.isAdmin(session['username']):
-			db.addAdmin(session['username'], None):
+			db.addAdmin(session['username'], None)
 		return redirect('/')
 	except:
 		return redirect(url_for('login'))
