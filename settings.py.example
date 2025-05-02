@@ -14,7 +14,7 @@ serialport = '/dev/ttyS0'
 
 # Optional: Static server secret for sessions, otherwise generated on each start randomly
 #server_secret = 'verySecureKey'
-force_otp = false
+force_otp = False
 # Optional: domain to use for OTP
 #domain = 'kasse.hacker.space'
 
@@ -22,3 +22,8 @@ force_otp = false
 #openid_url = 'https://auth.hacker.space/.well-known/openid-configuration'
 #openid_id = 'clientid'
 #openid_secret = 'clientsecret'
+
+# Optional: MQTT/HomeAssistant
+#mqtt_host = 'mqtt.hacker.space'
+#mqtt_user = 'nfc_kasse'
+#mqtt_password = 'password'

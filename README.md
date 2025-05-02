@@ -5,8 +5,10 @@ Standalone bietet sie die folgenden Funktionen:
 - Registrierung neuer NFC-Tags (anonym)
 - Kaufen von Artikeln mit EAN/QR-Code aus Guthaben
 - Webverwaltung
-    - 2FA via OTP (derzeit zwingend)
+    - 2FA via OTP (optional)
+    - OpenID-Authentifizierung
     - Artikelverwaltung (Bestand, Preis, ...)
+    - Artikel-Alias (Gleiches Produkt, andere EAN)
     - Ausstellen von QR-Codes für Guthabenaufladungen (Single Use Token)
 
 Für mehr Self-Service haben wir zusätzlich noch einen Bankautomaten gebaut, an dem die Tags eigenständig mit Bargeld aufgeladen werden können und die Transaktionshistorie eingesehen werden kann.
