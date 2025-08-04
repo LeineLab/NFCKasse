@@ -28,6 +28,7 @@ ha = homeassistant.HomeAssistantMQTT()
 
 app = server.app
 server.db = server_db
+server.ha = ha
 value = 0
 
 def buttonLoop(timeout = 20, countdown_button = -1):

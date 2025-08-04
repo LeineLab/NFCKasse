@@ -16,6 +16,7 @@ app = Flask(__name__,
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
 qrcode = QRcode(app)
 db = None
+ha = None
 
 try:
 	app.secret_key = settings.server_secret
@@ -242,6 +243,8 @@ def page_products():
 				db.addProduct(request.form['ean'], request.form['name'], request.form['price'], request.form.get('stock', 0), request.form.get('category'), session['username'])
 			except Exception as e:
 				app.logger.critical(e)
+		product = db.getProduct(request.form['ean'])
+		ha.updateProduct(product)
 	products = db.getProducts()
 	categories = db.getProductCategories()
 	sales_7d = db.getProductMaxSales(7)
