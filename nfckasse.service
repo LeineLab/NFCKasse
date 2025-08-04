@@ -3,6 +3,7 @@ Description=Kassenserver
 After=network.target mariadb.service
 
 [Service]
+WorkingDirectory=/opt/kasse
 ExecStart=/opt/kasse/kasse.py
 Restart=on-failure
 RestartPreventExitStatus=255
