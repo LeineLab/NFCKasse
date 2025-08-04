@@ -209,4 +209,9 @@ thread = Thread(target=worker)
 thread.daemon = True
 thread.start()
 
-server.app.run(host='0.0.0.0', threaded=True)
+ssl_context = None
+try:
+	ssl_context = ('cert/'+settings.ssl_cert, 'cert/'+settings.ssl_key)
+except AttributeError:
+	logging.info('Starting without SSL certificate')
+server.app.run(host='0.0.0.0', threaded=True, ssl_context=ssl_context)

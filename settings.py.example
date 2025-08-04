@@ -17,6 +17,9 @@ serialport = '/dev/ttyS0'
 force_otp = False
 # Optional: domain to use for OTP
 #domain = 'kasse.hacker.space'
+# Optional: SSL certificate in cert/ directory
+#ssl_key  = 'kasse.hacker.space.key'
+#ssl_cert = 'kasse.hacker.space.crt'
 
 # Optional: OpenID Config
 #openid_url = 'https://auth.hacker.space/.well-known/openid-configuration'
