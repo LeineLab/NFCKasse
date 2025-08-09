@@ -37,6 +37,8 @@ venv/bin/pip install -r requirements.txt
 cp settings.py.example settings.py
 ```
 
+Debian-Trixie: [lgpio manuell bauen](https://abyz.me.uk/lg/download.html)
+
 Nachfolgend muss ein User in der Datenbank angelegt werden und die Datenbank selbst erstellt werden.
 ```
 sudo mysql
