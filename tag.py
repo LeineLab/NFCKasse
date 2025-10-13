@@ -1,4 +1,4 @@
-#!/opt/kasse/venv/bin/python3
+#!/usr/bin/env python3
 
 from pn532pi import Pn532I2c, Pn532, pn532
 from hashlib import md5
