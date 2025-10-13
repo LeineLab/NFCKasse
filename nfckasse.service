@@ -4,7 +4,9 @@ After=network.target mariadb.service
 
 [Service]
 WorkingDirectory=/opt/kasse
+Environment="PATH=/opt/kasse/venv/bin"
 ExecStart=/opt/kasse/kasse.py
+TasksMax=512
 Restart=on-failure
 RestartPreventExitStatus=255
 Type=simple
