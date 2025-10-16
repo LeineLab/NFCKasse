@@ -2,6 +2,7 @@ import settings
 import uuid
 from ha_mqtt_discoverable import Settings, DeviceInfo
 from ha_mqtt_discoverable.sensors import Sensor, SensorInfo
+import paho.mqtt.client as mqtt
 
 class HomeAssistantMQTT:
 	productSensors = {}
@@ -16,7 +17,11 @@ class HomeAssistantMQTT:
 			for i in range(1, 6):
 				MAC = '%s:%s' % (MAC[:i * 3 - 1], MAC[i * 3 - 1:])
 			self.dev_id = settings.dev_name.replace(' ','-')
-			self.settings = Settings.MQTT(host=settings.mqtt_host, username=settings.mqtt_user, password=settings.mqtt_password)
+			self.mqtt = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+			self.mqtt.username_pw_set(settings.mqtt_user, settings.mqtt_password)
+			self.mqtt.connect(settings.mqtt_host, port=1883, keepalive=60)
+			self.mqtt.loop_start()
+			self.settings = Settings.MQTT(client=self.mqtt)
 			self.device = DeviceInfo(name=settings.dev_name, manufacturer='LeineLab', model='NFC Kasse', identifiers=MAC)
 			self.stateSensor = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name='State', unique_id='nfckasse_'+self.dev_id+'_state', device=self.device), manual_availability=True))
 			self.stateSensor.set_state('idle')
