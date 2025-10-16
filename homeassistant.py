@@ -18,8 +18,9 @@ class HomeAssistantMQTT:
 			self.dev_id = settings.dev_name.replace(' ','-')
 			self.settings = Settings.MQTT(host=settings.mqtt_host, username=settings.mqtt_user, password=settings.mqtt_password)
 			self.device = DeviceInfo(name=settings.dev_name, manufacturer='LeineLab', model='NFC Kasse', identifiers=MAC)
-			self.stateSensor = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name='State', unique_id='nfckasse_'+self.dev_id+'_state', device=self.device)))
+			self.stateSensor = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name='State', unique_id='nfckasse_'+self.dev_id+'_state', device=self.device), manual_availability=True))
 			self.stateSensor.set_state('idle')
+			self.stateSensor.set_availability(True)
 			self.balanceSensor = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name='Balance', unique_id='nfckasse_'+self.dev_id+'_balance', device_class="monetary", unit_of_measurement="EUR", device=self.device)))
 			self.enabled = True
 
@@ -35,7 +36,9 @@ class HomeAssistantMQTT:
 		if self.enabled:
 			if product['ean'] not in self.productSensors:
 				self.productSensors[product['ean']] = {}
-				self.productSensors[product['ean']]['stock'] = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name=product['name']+' Stock', unique_id='nfckasse_'+product['ean']+'_stock', unit_of_measurement="pcs", device=self.device)))
-				self.productSensors[product['ean']]['price'] = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name=product['name']+' Price', unique_id='nfckasse_'+product['ean']+'_price', device_class="monetary", unit_of_measurement="EUR", device=self.device)))
+				self.productSensors[product['ean']]['stock'] = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name=product['name']+' Stock', unique_id='nfckasse_'+product['ean']+'_stock', unit_of_measurement="pcs", device=self.device), manual_availability=True))
+				self.productSensors[product['ean']]['price'] = Sensor(Settings(mqtt=self.settings, entity=SensorInfo(name=product['name']+' Price', unique_id='nfckasse_'+product['ean']+'_price', device_class="monetary", unit_of_measurement="EUR", device=self.device), manual_availability=True))
+				self.productSensors[product['ean']]['stock'].set_availability(True)
+				self.productSensors[product['ean']]['price'].set_availability(True)
 			self.productSensors[product['ean']]['stock'].set_state(product['stock'])
 			self.productSensors[product['ean']]['price'].set_state(product['price'])
