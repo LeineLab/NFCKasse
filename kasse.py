@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-import server, led, buzzer, scanner, tag, display, buttons, database, time, logging, settings, homeassistant
-from threading import Thread
+import led, buzzer, scanner, tag, display, buttons, makerspaceapi, time, logging, settings, homeassistant
 
-PIN_SCANNER_ACTIVE  = 18
+#PIN_SCANNER_ACTIVE  = 18
 PIN_SCANNER_ACTIVE  = -1
 
 scan = scanner.BarcodeScanner(PIN_SCANNER_ACTIVE, settings.serialport)
@@ -12,23 +11,8 @@ disp = display.Display()
 btns = buttons.Buttons(21, 20)
 buzz = buzzer.Buzzer(19)
 led  = led.LED(5, 13, 6)
-db = database.Database(
-	host=settings.db_host,
-	user=settings.db_user,
-	password=settings.db_password,
-	database=settings.db_database
-)
-server_db = database.Database(
-	host=settings.db_host,
-	user=settings.db_user,
-	password=settings.db_password,
-	database=settings.db_database
-)
-ha = homeassistant.HomeAssistantMQTT()
-
-app = server.app
-server.db = server_db
-server.ha = ha
+api  = makerspaceapi.MakerSpaceAPI()
+ha   = homeassistant.HomeAssistantMQTT()
 value = 0
 
 def buttonLoop(timeout = 20, countdown_button = -1):
@@ -50,13 +34,6 @@ def buttonLoop(timeout = 20, countdown_button = -1):
 	logging.info("Waiting for buttons timed out")
 	return -1
 
-def worker():
-	products = db.getProducts()
-	for product in products:
-		ha.updateProduct(product)
-	while True:
-		ui()
-
 def ui():
 	ha.setState('idle')
 	disp.showTag(settings.uid_guest is not None)
@@ -71,18 +48,16 @@ def ui():
 			pressed = btns.getPressed()
 			if pressed[0]:
 				uid = settings.uid_guest
-		if db.ping():
-			ha.setBalance(db.getBalance())
 	print(uid)
 	disp.dim(100)
-	if not db.connect():
+	if not api.ping():
 		disp.showNoConnection()
 		led.red()
 		time.sleep(5)
 		return
 
 	cancel = 0
-	value = db.getCard(uid)
+	value = api.getCard(uid)
 	if value is None:
 		ha.setState('signup')
 		disp.showTagNotKnown()
@@ -94,8 +69,12 @@ def ui():
 			while uid2 is None and timeout > time.time():
 				uid2 = card.get()
 			if uid == uid2:
-				db.addCard(uid)
-				value = 0
+				if api.addCard(uid):
+					value = 0
+				else:
+					disp.showRegisterFail()
+					cancel = 1
+					time.sleep(5)
 			else:
 				disp.showTagDifferent()
 				cancel = 1
@@ -130,11 +109,11 @@ def ui():
 			if buttonLoop() != 1:
 				cancel = 1
 		else:
-			bc = db.getAlias(bc)
-			product = db.getProduct(bc)
+			bc = api.getAlias(bc)
+			product = api.getProduct(bc)
 			if product is None:
 				ha.setState('waiting')
-				topupval, isused = db.checkTopUp(bc)
+				topupval, isused = api.checkTopUp(bc)
 				if topupval == None:
 					ha.setState('waiting')
 					led.purple()
@@ -159,9 +138,9 @@ def ui():
 					elif b == -1:
 						cancel = 1
 					else:
-						if db.topUpCard(uid, bc):
+						if api.topUpCard(uid, bc):
 							led.green()
-							value = db.getCard(uid)
+							value = api.getCard(uid)
 							disp.showValue(value)
 							led.blue()
 							if buttonLoop(10) != 1:
@@ -179,39 +158,29 @@ def ui():
 				ret = buttonLoop(5, 1)
 				if ret == 1 or ret == -1:
 					if product['price'] <= value:
-						db.buyProduct(uid, bc)
-						ha.updateProduct(db.getProduct(bc))
-						ha.setBalance(db.getBalance())
-						#print(db.changeCardValue(uid, -price))
-						#print(db.reduceProductStock(bc, 1))
-						value = db.getCard(uid)
+						api.buyProduct(uid, bc)
+						ha.updateProduct(api.getProduct(bc))
+						ha.setBalance(api.getBalance())
+						value = api.getCard(uid)
 						led.green()
 						disp.showScanMore(value)
 						if buttonLoop() != 1:
 							cancel = 1
-				#elif ret == -1:
-				#	cancel = 1
-				#	led.red()
-				#	time.sleep(1)
 				else:
 					if product['price'] > value:
 						cancel = 1
 					else:
 						led.red()
-						value = db.getCard(uid)
+						value = api.getCard(uid)
 						disp.showScanMore(value)
 						if not buttonLoop():
 							cancel = 1
 							led.red()
 							time.sleep(1)
 
-thread = Thread(target=worker)
-thread.daemon = True
-thread.start()
-
-ssl_context = None
-try:
-	ssl_context = ('cert/'+settings.ssl_cert, 'cert/'+settings.ssl_key)
-except AttributeError:
-	logging.info('Starting without SSL certificate')
-server.app.run(host='0.0.0.0', threaded=True, ssl_context=ssl_context)
+if __name__ == '__main__':
+	products = api.getProducts()
+	for product in products:
+		ha.updateProduct(product)
+	while True:
+		ui()

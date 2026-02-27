@@ -99,6 +99,13 @@ class Display:
 		self.draw.text((0, 0), "Karte erneut\nvorhalten", font=self.font, fill=(255,255,255))
 		self.display.image(self.image)
 
+	"""Show error when registration fails
+	"""
+	def showRegisterFail(self):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		self.draw.text((0, 0), "Registrierung\nfehlgeschlagen", font=self.font, fill=(255,0,0))
+		self.display.image(self.image)
+
 	"""Show message, that IDs differ
 	"""
 	def showTagDifferent(self):
