@@ -6,3 +6,4 @@ Pillow
 requests
 ha-mqtt-discoverable
 rpi-lgpio
+qrcode

@@ -4,6 +4,7 @@ import busio
 import digitalio
 from board import SCK, MOSI, MISO, CE0, D25, D24
 import RPi.GPIO as GPIO
+import qrcode
 
 from adafruit_rgb_display import color565
 import adafruit_rgb_display.ili9341 as ili9341
@@ -119,6 +120,31 @@ class Display:
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
 		self.draw.text((0, 0), "Karte unbekannt", font=self.font, fill=(255,255,255))
 		self.showOptions("Neu anlegen","Abbruch")
+		self.display.image(self.image)
+
+	"""Show prompt to present tag to connect
+	"""
+	def showOIDCscan(self):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		self.draw.text((0, 0), "Karte vorhalten\num QR-Code zu\ngenerieren", font=self.font, fill=(255,255,255))
+		self.showOptions("","Abbrechen")
+		self.display.image(self.image)
+
+	"""OIDC Connection failed
+	"""
+	def showOIDCfail(self):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		self.draw.text((0, 0), "Karte bereits\nverbunden oder\nunbekannt", font=self.font, fill=(255,0,0))
+		self.display.image(self.image)
+
+	"""Show QR-Code
+	"""
+	def showQR(self, data):
+		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
+		qr = qrcode.QRCode(box_size=3)
+		qr.add_data(data)
+		img = qr.make_image(back_color=(0, 0, 0), fill_color=(255, 255, 255)).convert("RGB")
+		self.image.paste(img, (int((self.WIDTH - (img.size)[0]) / 2), 0))
 		self.display.image(self.image)
 
 	"""Show prompt to scan product

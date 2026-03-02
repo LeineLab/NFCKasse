@@ -154,6 +154,24 @@ class MakerSpaceAPI:
             logger.exception('buyProduct failed')
             return False
 
+    def getConnectLink(self, uid):
+        '''Generate a short-lived OIDC linking URL for a card.
+        Returns the URL string, or None on error or if already linked (409).'''
+        try:
+            r = requests.post(
+                f'{_base()}/users/{uid}/connect-link',
+                headers=_headers(),
+                timeout=5,
+            )
+            if r.ok:
+                return r.json().get('url')
+            if r.status_code == 409:
+                return None  # already linked
+            return None
+        except requests.RequestException:
+            logger.exception('getConnectLink failed')
+            return None
+
     # ------------------------------------------------------------------ #
     # Topup codes - not yet supported in MakerSpaceAPI                   #
     # ------------------------------------------------------------------ #

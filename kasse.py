@@ -34,6 +34,29 @@ def buttonLoop(timeout = 20, countdown_button = -1):
 	logging.info("Waiting for buttons timed out")
 	return -1
 
+def showConnectUri():
+	disp.dim(100)
+	disp.showOIDCscan()
+	cancel = time.time() + 10
+	btns.resetState()
+	uid = None
+	while uid is None:
+		uid = card.get()
+		pressed = btns.getPressed()
+		if time.time() > cancel or pressed[1]:
+			return
+	if uid == settings.uid_guest:
+		disp.showOIDCfail()
+		time.sleep(5)
+		return
+	url = api.getConnectLink(uid)
+	if url:
+		disp.showQR(url)
+		buttonLoop()
+	else:
+		disp.showOIDCfail()
+		time.sleep(5)
+
 def ui():
 	ha.setState('idle')
 	disp.showTag(settings.uid_guest is not None)
@@ -48,6 +71,9 @@ def ui():
 			pressed = btns.getPressed()
 			if pressed[0]:
 				uid = settings.uid_guest
+			elif pressed[1]:
+				showConnectUri()
+				return
 	print(uid)
 	disp.dim(100)
 	if not api.ping():
