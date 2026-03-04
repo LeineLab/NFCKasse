@@ -1,14 +1,9 @@
 adafruit-circuitpython-rgb-display
 numpy
-mysql-connector-python
 pn532pi
 pyserial
 Pillow
-flask
-Flask-QRcode
-pyotp
-bcrypt
-authlib
 requests
 ha-mqtt-discoverable
 rpi-lgpio
+qrcode
