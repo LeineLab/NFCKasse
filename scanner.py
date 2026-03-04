@@ -34,7 +34,7 @@ class BarcodeScanner:
 				if len(self.__buffer):
 					tmp = self.__buffer
 					self.__buffer = b''
-					return tmp
+					return tmp.decode('utf-8')
 			else:
 				self.__buffer += c
 				if self.__buffer == b'\x02\x00\x00\x01\x00\x33\x31':
