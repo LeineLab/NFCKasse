@@ -12,7 +12,6 @@ btns = buttons.Buttons(21, 20)
 buzz = buzzer.Buzzer(19)
 led  = led.LED(5, 13, 6)
 api  = makerspaceapi.MakerSpaceAPI()
-ha   = homeassistant.HomeAssistantMQTT()
 value = 0
 
 def buttonLoop(timeout = 20, countdown_button = -1):
@@ -58,7 +57,6 @@ def showConnectUri():
 		time.sleep(5)
 
 def ui():
-	ha.setState('idle')
 	disp.showTag(settings.uid_guest is not None)
 	uid = None
 	idle = time.time() + 30
@@ -85,7 +83,6 @@ def ui():
 	cancel = 0
 	value = api.getCard(uid)
 	if value is None:
-		ha.setState('signup')
 		disp.showTagNotKnown()
 		led.red()
 		if buttonLoop() == 1:
@@ -109,7 +106,6 @@ def ui():
 			cancel = 1
 
 	while not cancel:
-		ha.setState('scanning')
 		buzz.beep(buzz.A5, 0.15)
 		disp.showScan(value)
 		led.white()
@@ -129,7 +125,6 @@ def ui():
 		if cancel:
 			break
 		if bc == None:
-			ha.setState('waiting')
 			disp.showNoCode()
 			led.blue()
 			if buttonLoop() != 1:
@@ -138,22 +133,18 @@ def ui():
 			bc = api.getAlias(bc)
 			product = api.getProduct(bc)
 			if product is None:
-				ha.setState('waiting')
 				topupval, isused = api.checkTopUp(bc)
 				if topupval == None:
-					ha.setState('waiting')
 					led.purple()
 					disp.showNoProduct()
 					if buttonLoop(10, 0) != 1:
 						cancel = 1
 				elif isused:
-					ha.setState('cancelling')
 					led.red()
 					disp.showTopUpUsed()
 					if buttonLoop(10) != 1:
 						cancel = 1
 				else:
-					ha.setState('topup')
 					led.yellow()
 					disp.showTopUp(topupval)
 					b =  buttonLoop(10)
@@ -175,8 +166,6 @@ def ui():
 							led.red()
 						time.sleep(1)
 			else:
-				ha.setState('buying')
-				ha.updateProduct(product)
 				led.yellow()
 				disp.showProduct(product['name'], product['price'], value)
 				if product['price'] > value:
@@ -185,8 +174,6 @@ def ui():
 				if ret == 1 or ret == -1:
 					if product['price'] <= value:
 						api.buyProduct(uid, bc)
-						ha.updateProduct(api.getProduct(bc))
-						ha.setBalance(api.getBalance())
 						value = api.getCard(uid)
 						led.green()
 						disp.showScanMore(value)
@@ -205,8 +192,5 @@ def ui():
 							time.sleep(1)
 
 if __name__ == '__main__':
-	products = api.getProducts()
-	for product in products:
-		ha.updateProduct(product)
 	while True:
 		ui()
