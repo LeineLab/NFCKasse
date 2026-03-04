@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import led, buzzer, scanner, tag, display, buttons, makerspaceapi, time, logging, settings, homeassistant
+import led, buzzer, scanner, tag, display, buttons, makerspaceapi, time, logging, settings
 
 #PIN_SCANNER_ACTIVE  = 18
 PIN_SCANNER_ACTIVE  = -1
