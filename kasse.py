@@ -6,7 +6,7 @@ import led, buzzer, scanner, tag, display, buttons, makerspaceapi, time, logging
 PIN_SCANNER_ACTIVE  = -1
 
 scan = scanner.BarcodeScanner(PIN_SCANNER_ACTIVE, settings.serialport)
-card = tag.NFCtag(port = 1, uid_hash = settings.uid_hash)
+card = tag.NFCtag(port = 1)
 disp = display.Display()
 btns = buttons.Buttons(21, 20)
 buzz = buzzer.Buzzer(19)
