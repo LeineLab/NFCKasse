@@ -1,5 +1,7 @@
 *.swp
 settings.py
+# lgpio pipe
+.lgd-nfy0
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
