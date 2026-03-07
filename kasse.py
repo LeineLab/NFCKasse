@@ -156,7 +156,7 @@ def ui():
 		else:
 			return
 
-	while Ture:
+	while True:
 		buzz.beep(buzz.A5, 0.15)
 		disp.message(_('msg.scan_item', balance=value), _('btn.connect') if (not oidc and uid != settings.uid_guest) else "", _('btn.logout'))
 		led.white()
