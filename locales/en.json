@@ -26,5 +26,5 @@
   "msg.hello_balance":    "Hello!\nCurrent balance:\n{balance:.2f}",
   "msg.product_detail":   "Item:\n{name}\nPrice: {price:.2f}\nBalance: {balance:.2f}",
   "msg.purchase_failed":  "Purchase failed!",
-  "msg.other_items":      "Other items?\nCurrent balance:\n{balance:.2f}"
+  "msg.purchase_cancel":  "Cancelled.\nOther items?\nCurrent balance:\n{balance:.2f}"
 }
