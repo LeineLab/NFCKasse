@@ -77,9 +77,30 @@ class Display:
 		self.draw.text(((self.WIDTH - font_width)/2, self.HEIGHT - font_height - 15), text, font=self.fontsmall, fill=(200-button_color * 200,button_color * 200,0))
 		self.display.image(self.image)
 
+	def _wrap_text(self, msg : str) -> str:
+		"""Word-wrap msg to fit within WIDTH pixels.
+		Explicit \n are preserved. Tokens containing non-breaking spaces
+		(\u00a0) are treated as indivisible; they are replaced with regular
+		spaces in the output after wrapping.
+		"""
+		result_lines = []
+		for paragraph in msg.split('\n'):
+			words = paragraph.split(' ')
+			line = ''
+			for word in words:
+				candidate = (line + ' ' + word).lstrip(' ')
+				if self.font.getbbox(candidate)[2] <= self.WIDTH:
+					line = candidate
+				else:
+					if line:
+						result_lines.append(line.replace('\u00a0', ' '))
+					line = word
+			result_lines.append(line.replace('\u00a0', ' '))
+		return '\n'.join(result_lines)
+
 	def dialog(self, msg : str, btn1 : str, btn2 : str, color : tuple[int, int, int]):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), msg, font=self.font, fill=(255, 0, 0))
+		self.draw.text((0, 0), self._wrap_text(msg), font=self.font, fill=(255, 0, 0))
 		self.showOptions(btn1, btn2)
 		self.display.image(self.image)
 

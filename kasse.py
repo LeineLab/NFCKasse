@@ -48,7 +48,7 @@ def showConnectUri(uid):
 		disp.showQR(url)
 		buttonLoop()
 	else:
-		disp.error("Karte bereits\nverbunden?")
+		disp.error("Karte bereits verbunden?")
 		time.sleep(5)
 
 def ui():
@@ -140,7 +140,7 @@ def ui():
 						cancel = 1
 				elif isused:
 					led.red()
-					disp.error("Aufladecode bereits\nbenutzt. Aufladen\nnicht möglich", BTN_SCAN, BTN_LOGOUT)
+					disp.error("Aufladecode bereits benutzt. Aufladen nicht möglich", BTN_SCAN, BTN_LOGOUT)
 					if buttonLoop(10) != 1:
 						cancel = 1
 				else:
@@ -166,11 +166,12 @@ def ui():
 						time.sleep(1)
 			else:
 				led.yellow()
+				pname = product['name'].replace(' ', '\u00a0')
 				if product['price'] > value:
 					buzz.abort()
-					disp.error("Artikel:\n%s\nPreis: %.2f\nGuthaben: %.2f\n" % (product['name'], product['price'], value), BTN_SCAN, BTN_CANCEL)
+					disp.error("Artikel:\n%s\nPreis: %.2f\nGuthaben: %.2f\n" % (pname, product['price'], value), BTN_SCAN, BTN_CANCEL)
 				else:
-					disp.message("Artikel:\n%s\nPreis: %.2f\nGuthaben: %.2f" % (product['name'], product['price'], value), BTN_BUY, BTN_CANCEL)
+					disp.message("Artikel:\n%s\nPreis: %.2f\nGuthaben: %.2f" % (pname, product['price'], value), BTN_BUY, BTN_CANCEL)
 				ret = buttonLoop(5, 1)
 				if ret == 1 or ret == -1:
 					if product['price'] <= value:
