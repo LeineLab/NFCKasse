@@ -120,7 +120,7 @@ class Display:
 	"""
 	def showQR(self, data):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		qr = qrcode.QRCode(box_size=3)
+		qr = qrcode.QRCode(box_size=3, border=0)
 		qr.add_data(data)
 		img = qr.make_image(back_color=(0, 0, 0), fill_color=(255, 255, 255)).convert("RGB")
 		self.image.paste(img, (int((self.WIDTH - (img.size)[0]) / 2), 0))
