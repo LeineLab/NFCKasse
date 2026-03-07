@@ -178,9 +178,11 @@ def ui():
 							value, oidc = api.getCard(uid)
 							led.green()
 							disp.success("Weitere Artikel?\nDerzeitiges Guthaben:\n%.2f" % value, BTN_SCAN, BTN_LOGOUT)
+							buzz.beep(buzz.A6, 0.15)
 						else:
 							led.red()
 							disp.error("Fehler beim Kauf!", BTN_SCAN, BTN_LOGOUT)
+							buzz.abort()
 						if buttonLoop() != 1:
 							cancel = 1
 				else:
