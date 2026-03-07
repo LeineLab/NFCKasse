@@ -10,7 +10,3 @@ serialport = '/dev/ttyUSB0'
 # Optional guest card UID (raw integer, or None to disable)
 uid_guest = None
 
-# Optional: MQTT/HomeAssistant
-#mqtt_host = 'mqtt.hacker.space'
-#mqtt_user = 'nfc_kasse'
-#mqtt_password = 'password'
