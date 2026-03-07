@@ -35,7 +35,7 @@ def _cycle_language():
 	i18n.set_language(_languages[_lang_index])
 
 
-def buttonLoop(timeout = 20, countdown_button = -1):
+def buttonLoop(timeout : int = 20, countdown_button : int = -1):
 	tout = time.time() + timeout
 	lsecs = -1
 	btns.resetState()
@@ -54,7 +54,7 @@ def buttonLoop(timeout = 20, countdown_button = -1):
 	logging.info("Waiting for buttons timed out")
 	return -1
 
-def showConnectUri(uid):
+def showConnectUri(uid : int):
 	url = api.getConnectLink(uid)
 	if url:
 		disp.showQR(url)
@@ -62,6 +62,67 @@ def showConnectUri(uid):
 	else:
 		disp.error(_('msg.already_connected'))
 		time.sleep(5)
+
+def createAccount(uid : int):
+	disp.info(_('msg.card_unknown'), _('btn.register'), _('btn.cancel'))
+	led.red()
+	if buttonLoop() == 1:
+		# Verify, that the cards ID is consistent.
+		# ID-/Bank-/Creditcards don't play well with the mifare ID readout.
+		uid2 = None
+		timeout = time.time() + 10
+		disp.info(_('msg.present_again'))
+		while uid2 is None and timeout > time.time():
+			uid2 = card.get()
+		if uid == uid2:
+			if api.addCard(uid):
+				return True
+			else:
+				disp.error(_('msg.register_failed'))
+				time.sleep(5)
+				return False
+		else:
+			# Do not register if card id is not consistent.
+			disp.error(_('msg.card_id_mismatch'))
+			time.sleep(5)
+			return False
+	else:
+		return False
+
+def buyProduct(uid : int, product):
+	led.yellow()
+	pname = product['name'].replace(' ', '\u00a0')
+	if product['price'] > value:
+		buzz.abort()
+		disp.error(_('msg.product_detail', name=pname, price=product['price'], balance=value), _('btn.scan'), _('btn.cancel'))
+	else:
+		disp.message(_('msg.product_detail', name=pname, price=product['price'], balance=value), _('btn.buy'), _('btn.cancel'))
+	ret = buttonLoop(5, 1)
+	if ret == 1 or ret == -1:
+		if product['price'] <= value:
+			if api.buyProduct(uid, product['ean']):
+				value, oidc = api.getCard(uid)
+				led.green()
+				disp.success(_('msg.more_items', balance=value), _('btn.scan'), _('btn.logout'))
+				buzz.beep(buzz.A6, 0.15)
+			else:
+				led.red()
+				disp.error(_('msg.purchase_failed'), _('btn.scan'), _('btn.logout'))
+				buzz.abort()
+			if buttonLoop() != 1:
+				return False
+	else:
+		if product['price'] > value:
+			return False
+		else:
+			led.red()
+			value, oidc = api.getCard(uid)
+			disp.error(_('msg.other_items', balance=value), _('btn.scan'), _('btn.logout'))
+			if not buttonLoop():
+				led.red()
+				time.sleep(1)
+				return False
+	return True
 
 def ui():
 	disp.message(_('msg.present_card'), _('btn.guest') if settings.uid_guest is not None else "", _lang_btn())
@@ -90,32 +151,12 @@ def ui():
 	cancel = 0
 	value, oidc = api.getCard(uid)
 	if value is None:
-		disp.info(_('msg.card_unknown'), _('btn.register'), _('btn.cancel'))
-		led.red()
-		if buttonLoop() == 1:
-			# Verify, that the cards ID is consistent.
-			# ID-/Bank-/Creditcards don't play well with the mifare ID readout.
-			uid2 = None
-			timeout = time.time() + 10
-			disp.info(_('msg.present_again'))
-			while uid2 is None and timeout > time.time():
-				uid2 = card.get()
-			if uid == uid2:
-				if api.addCard(uid):
-					value = 0
-				else:
-					disp.error(_('msg.register_failed'))
-					cancel = 1
-					time.sleep(5)
-			else:
-				# Do not register if card id is not consistent.
-				disp.error(_('msg.card_id_mismatch'))
-				cancel = 1
-				time.sleep(5)
+		if createAccount(uid):
+			value, oidc = api.getCard(uid)
 		else:
-			cancel = 1
+			return
 
-	while not cancel:
+	while Ture:
 		buzz.beep(buzz.A5, 0.15)
 		disp.message(_('msg.scan_item', balance=value), _('btn.connect') if (not oidc and uid != settings.uid_guest) else "", _('btn.logout'))
 		led.white()
@@ -128,10 +169,14 @@ def ui():
 			scan_iteration += 1
 			pressed = btns.getPressed()
 			if pressed[0] and not oidc and uid != settings.uid_guest:
+				scan.endScan()
+				# Show barcode
 				showConnectUri(uid)
-			if pressed[1]:
-				cancel = 1
-				break
+				# Quit session
+				return
+			if pressed[1]: # Logout
+				scan.endScan()
+				return
 		scan.endScan()
 		if cancel:
 			break
@@ -139,11 +184,20 @@ def ui():
 			disp.error(_('msg.no_barcode'), _('btn.scan'), _('btn.logout'))
 			led.blue()
 			if buttonLoop() != 1:
-				cancel = 1
+				return
 		else:
 			bc = api.getAlias(bc)
 			product = api.getProduct(bc)
+			if product:
+				if not buyProduct(uid, product):
+					break
 			if product is None:
+				led.purple()
+				disp.error(_('msg.product_not_found'), _('btn.scan'), _('btn.logout'))
+				if buttonLoop(10, 0) != 1:
+					return
+				'''
+				# Currently not in use, as with the switch from database to MakerSpaceAPI there is currently no topup code
 				topupval, isused = api.checkTopUp(bc)
 				if topupval == None:
 					led.purple()
@@ -176,39 +230,8 @@ def ui():
 						else:
 							led.red()
 						time.sleep(1)
-			else:
-				led.yellow()
-				pname = product['name'].replace(' ', '\u00a0')
-				if product['price'] > value:
-					buzz.abort()
-					disp.error(_('msg.product_detail', name=pname, price=product['price'], balance=value), _('btn.scan'), _('btn.cancel'))
-				else:
-					disp.message(_('msg.product_detail', name=pname, price=product['price'], balance=value), _('btn.buy'), _('btn.cancel'))
-				ret = buttonLoop(5, 1)
-				if ret == 1 or ret == -1:
-					if product['price'] <= value:
-						if api.buyProduct(uid, bc):
-							value, oidc = api.getCard(uid)
-							led.green()
-							disp.success(_('msg.more_items', balance=value), _('btn.scan'), _('btn.logout'))
-							buzz.beep(buzz.A6, 0.15)
-						else:
-							led.red()
-							disp.error(_('msg.purchase_failed'), _('btn.scan'), _('btn.logout'))
-							buzz.abort()
-						if buttonLoop() != 1:
-							cancel = 1
-				else:
-					if product['price'] > value:
-						cancel = 1
-					else:
-						led.red()
-						value, oidc = api.getCard(uid)
-						disp.error(_('msg.other_items', balance=value), _('btn.scan'), _('btn.logout'))
-						if not buttonLoop():
-							cancel = 1
-							led.red()
-							time.sleep(1)
+				'''
+				
 
 if __name__ == '__main__':
 	while True:
