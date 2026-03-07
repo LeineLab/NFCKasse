@@ -26,5 +26,5 @@
   "msg.hello_balance":    "Hallo!\nDerzeitiges Guthaben:\n{balance:.2f}",
   "msg.product_detail":   "Artikel:\n{name}\nPreis: {price:.2f}\nGuthaben: {balance:.2f}",
   "msg.purchase_failed":  "Fehler beim Kauf!",
-  "msg.other_items":      "Anderen Artikel?\nDerzeitiges Guthaben:\n{balance:.2f}"
+  "msg.purchase_cancel":  "Abgebrochen.\nAnderen Artikel?\nDerzeitiges Guthaben:\n{balance:.2f}"
 }

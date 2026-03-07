@@ -117,7 +117,7 @@ def buyProduct(uid : int, value : float, product):
 		else:
 			led.red()
 			value, oidc = api.getCard(uid)
-			disp.error(_('msg.other_items', balance=value), _('btn.scan'), _('btn.logout'))
+			disp.error(_('msg.purchase_cancel', balance=value), _('btn.scan'), _('btn.logout'))
 			if not buttonLoop():
 				led.red()
 				time.sleep(1)
@@ -231,7 +231,7 @@ def ui():
 							led.red()
 						time.sleep(1)
 				'''
-				
+
 
 if __name__ == '__main__':
 	while True:
