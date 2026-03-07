@@ -1,0 +1,30 @@
+{
+  "lang.name":    "Deutsch",
+
+  "btn.guest":    "Gast",
+  "btn.scan":     "Artikel scannen",
+  "btn.logout":   "Logout",
+  "btn.cancel":   "Abbruch",
+  "btn.buy":      "Kaufen",
+  "btn.register": "Registrieren",
+  "btn.connect":  "OIDC verbinden",
+  "btn.topup":    "Aufladen",
+
+  "msg.present_card":     "Karte vorhalten",
+  "msg.no_connection":    "Keine Verbindung\nAPI/WLAN offline\nGgf. neu starten",
+  "msg.card_unknown":     "Karte unbekannt\nNeu registrieren?",
+  "msg.present_again":    "Karte erneut vorhalten",
+  "msg.register_failed":  "Registrierung fehlgeschlagen",
+  "msg.card_id_mismatch": "Karten-ID weicht ab\nKein Konto angelegt.",
+  "msg.scan_item":        "Artikel scannen\nDerzeitiges Guthaben:\n{balance:.2f}",
+  "msg.already_connected":"Karte bereits verbunden?",
+  "msg.no_barcode":       "Kein Barcode erkannt",
+  "msg.product_not_found":"Produkt nicht gelistet",
+  "msg.topup_used":       "Aufladecode bereits benutzt. Aufladen nicht möglich",
+  "msg.topup_value":      "Gegenwert:\n{value:.2f}",
+  "msg.more_items":       "Weitere Artikel?\nDerzeitiges Guthaben:\n{balance:.2f}",
+  "msg.hello_balance":    "Hallo!\nDerzeitiges Guthaben:\n{balance:.2f}",
+  "msg.product_detail":   "Artikel:\n{name}\nPreis: {price:.2f}\nGuthaben: {balance:.2f}",
+  "msg.purchase_failed":  "Fehler beim Kauf!",
+  "msg.other_items":      "Anderen Artikel?\nDerzeitiges Guthaben:\n{balance:.2f}"
+}

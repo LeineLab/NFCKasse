@@ -66,17 +66,13 @@ class MakerSpaceAPI:
                 timeout=5,
             )
             if r.ok:
-                return round(float(r.json().get('balance', 0)), 2)
+                return round(float(r.json().get('balance', 0)), 2), r.json().get('oidc_sub', None) is not None
             if r.status_code == 404:
-                return None
-            return None
+                return None, False
+            return None, False
         except requests.RequestException:
             logger.exception('getCard failed')
-            return None
-
-    def getBalance(self):
-        '''Total credits across all cards - not exposed by device token; returns 0.'''
-        return 0
+            return None, False
 
     # ------------------------------------------------------------------ #
     # Product operations                                                   #

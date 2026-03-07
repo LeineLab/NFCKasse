@@ -77,143 +77,53 @@ class Display:
 		self.draw.text(((self.WIDTH - font_width)/2, self.HEIGHT - font_height - 15), text, font=self.fontsmall, fill=(200-button_color * 200,button_color * 200,0))
 		self.display.image(self.image)
 
-	"""Show warning, that db is not connected
-	"""
-	def showNoConnection(self):
+	def _wrap_text(self, msg : str) -> str:
+		"""Word-wrap msg to fit within WIDTH pixels.
+		Explicit \n are preserved. Tokens containing non-breaking spaces
+		(\u00a0) are treated as indivisible; they are replaced with regular
+		spaces in the output after wrapping.
+		"""
+		result_lines = []
+		for paragraph in msg.split('\n'):
+			words = paragraph.split(' ')
+			line = ''
+			for word in words:
+				candidate = (line + ' ' + word).lstrip(' ')
+				if self.font.getbbox(candidate)[2] <= self.WIDTH:
+					line = candidate
+				else:
+					if line:
+						result_lines.append(line.replace('\u00a0', ' '))
+					line = word
+			result_lines.append(line.replace('\u00a0', ' '))
+		return '\n'.join(result_lines)
+
+	def dialog(self, msg : str, btn1 : str, btn2 : str, color : tuple[int, int, int]):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Keine Verbindung\nDatenbank offline\nGgf. neu starten", font=self.font, fill=(255,0,0))
+		self.draw.text((0, 0), self._wrap_text(msg), font=self.font, fill=color)
+		self.showOptions(btn1, btn2)
 		self.display.image(self.image)
 
-	"""Show prompt to present tag
-	"""
-	def showTag(self, guest):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karte vorhalten", font=self.font, fill=(255,255,255))
-		if guest:
-			self.showOptions("Gast","OIDC verknüpfen")
-		else:
-			self.showOptions("","OIDC verknüpfen")
-		self.display.image(self.image)
+	def error(self, msg, btn1 = "", btn2 = ""):
+		self.dialog(msg, btn1, btn2, (255, 0, 0))
 
-	"""Show prompt to present tag again
-	"""
-	def showTagAgain(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karte erneut\nvorhalten", font=self.font, fill=(255,255,255))
-		self.display.image(self.image)
+	def info(self, msg, btn1 = "", btn2 = ""):
+		self.dialog(msg, btn1, btn2, (255, 255, 0))
 
-	"""Show error when registration fails
-	"""
-	def showRegisterFail(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Registrierung\nfehlgeschlagen", font=self.font, fill=(255,0,0))
-		self.display.image(self.image)
+	def success(self, msg, btn1 = "", btn2 = ""):
+		self.dialog(msg, btn1, btn2, (0, 255, 0))
 
-	"""Show message, that IDs differ
-	"""
-	def showTagDifferent(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karten-ID weicht ab\nKein Konto angelegt.", font=self.font, fill=(255,0,0))
-		self.display.image(self.image)
-
-	"""Show message, that currently the card is unknown
-	"""
-	def showTagNotKnown(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karte unbekannt", font=self.font, fill=(255,255,255))
-		self.showOptions("Neu anlegen","Abbruch")
-		self.display.image(self.image)
-
-	"""Show prompt to present tag to connect
-	"""
-	def showOIDCscan(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karte vorhalten\num QR-Code zu\ngenerieren", font=self.font, fill=(255,255,255))
-		self.showOptions("","Abbrechen")
-		self.display.image(self.image)
-
-	"""OIDC Connection failed
-	"""
-	def showOIDCfail(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karte bereits\nverbunden oder\nunbekannt", font=self.font, fill=(255,0,0))
-		self.display.image(self.image)
+	def message(self, msg, btn1 = "", btn2 = ""):
+		self.dialog(msg, btn1, btn2, (255, 255, 255))
 
 	"""Show QR-Code
 	"""
 	def showQR(self, data):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		qr = qrcode.QRCode(box_size=3)
+		qr = qrcode.QRCode(box_size=3, border=0)
 		qr.add_data(data)
 		img = qr.make_image(back_color=(0, 0, 0), fill_color=(255, 255, 255)).convert("RGB")
 		self.image.paste(img, (int((self.WIDTH - (img.size)[0]) / 2), 0))
-		self.display.image(self.image)
-
-	"""Show prompt to scan product
-	"""
-	def showScan(self, value):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Artikel scannen\nDerzeitiges Guthaben:\n%.2f" % value, font=self.font, fill=(255,255,255))
-		self.showOptions("","Logout")
-		self.display.image(self.image)
-
-	"""Show dialog, if more customer wants to scan more articles
-	"""
-	def showScanMore(self, value):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Weitere Artikel?\nDerzeitiges Guthaben:\n%.2f" % value, font=self.font, fill=(255,255,255))
-		self.showOptions("Artikel scannen","Logout")
-		self.display.image(self.image)
-
-	"""Show current value of the card
-	"""
-	def showValue(self, value):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Hallo!\nDerzeitiges Guthaben:\n%.2f" % value, font=self.font, fill=(255,255,255))
-		self.showOptions("Artikel scannen","Logout")
-		self.display.image(self.image)
-
-	"""Show message, that barcode scanning was unsuccessful
-	"""
-	def showNoCode(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Kein Barcode erkannt", font=self.font, fill=(255,255,255))
-		self.showOptions("Artikel scannen","Logout")
-		self.display.image(self.image)
-
-	"""Show message, that the code is not matching any product or topup code
-	"""
-	def showNoProduct(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Produkt nicht gelistet", font=self.font, fill=(255,255,255))
-		self.showOptions("Artikel scannen","Logout")
-		self.display.image(self.image)
-
-	"""Show message, that the topup code is already redeemed
-	"""
-	def showTopUpUsed(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Aufladecode bereits\nbenutzt. Aufladen\nnicht möglich", font=self.font, fill=(255,255,255))
-		self.showOptions("Artikel scannen","Logout")
-		self.display.image(self.image)
-
-	"""Show value of topup code
-	"""
-	def showTopUp(self, value):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Gegenwert:\n%.2f" % (value, ), font=self.font, fill=(255,255,255))
-		self.showOptions("Aufladen","Abbruch")
-		self.display.image(self.image)
-
-	"""Show product name, price and card value
-	"""
-	def showProduct(self, name, price, value):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Artikel:\n%s\nPreis: %.2f\nGuthaben: %.2f" % (name, price, value), font=self.font, fill=(255,255,255))
-		if value < price:
-			self.showOptions("Artikel scannen","Abbruch")
-		else:
-			self.showOptions("Buchen","Abbruch")
 		self.display.image(self.image)
 
 """Unittest sample
@@ -221,12 +131,12 @@ class Display:
 if __name__ == '__main__':
 	from time import sleep
 	disp = Display()
-	disp.showScan(123)
+	disp.error("Error")
 	sleep(2)
-	disp.showValue(5.32)
+	disp.info("Info")
 	sleep(2)
-	disp.showNoCode()
+	disp.success("Success")
 	sleep(2)
-	disp.showNoProduct()
+	disp.message("Message")
 	sleep(2)
-	disp.showProduct("Premium Cola", 1.0, 542.32)
+	disp.showQR("https://leinelab.org")

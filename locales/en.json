@@ -1,0 +1,30 @@
+{
+  "lang.name":    "English",
+
+  "btn.guest":    "Guest",
+  "btn.scan":     "Scan item",
+  "btn.logout":   "Logout",
+  "btn.cancel":   "Cancel",
+  "btn.buy":      "Buy",
+  "btn.register": "Register",
+  "btn.connect":  "Link OIDC",
+  "btn.topup":    "Top up",
+
+  "msg.present_card":     "Present card",
+  "msg.no_connection":    "No connection\nAPI/WiFi offline\nRestart if needed",
+  "msg.card_unknown":     "Card unknown\nRegister new?",
+  "msg.present_again":    "Present card again",
+  "msg.register_failed":  "Registration failed",
+  "msg.card_id_mismatch": "Card ID mismatch\nNo account created.",
+  "msg.scan_item":        "Scan item\nCurrent balance:\n{balance:.2f}",
+  "msg.already_connected":"Card already linked?",
+  "msg.no_barcode":       "No barcode detected",
+  "msg.product_not_found":"Product not listed",
+  "msg.topup_used":       "Top-up code already used. Top-up not possible",
+  "msg.topup_value":      "Credit value:\n{value:.2f}",
+  "msg.more_items":       "More items?\nCurrent balance:\n{balance:.2f}",
+  "msg.hello_balance":    "Hello!\nCurrent balance:\n{balance:.2f}",
+  "msg.product_detail":   "Item:\n{name}\nPrice: {price:.2f}\nBalance: {balance:.2f}",
+  "msg.purchase_failed":  "Purchase failed!",
+  "msg.other_items":      "Other items?\nCurrent balance:\n{balance:.2f}"
+}
