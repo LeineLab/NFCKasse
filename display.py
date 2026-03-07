@@ -116,14 +116,6 @@ class Display:
 	def message(self, msg, btn1 = "", btn2 = ""):
 		self.dialog(msg, btn1, btn2, (255, 255, 255))
 
-	"""Show message, that currently the card is unknown
-	"""
-	def showTagNotKnown(self):
-		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), "Karte unbekannt", font=self.font, fill=(255,255,255))
-		self.showOptions("Neu anlegen","Abbruch")
-		self.display.image(self.image)
-
 	"""Show QR-Code
 	"""
 	def showQR(self, data):
