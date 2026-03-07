@@ -100,7 +100,7 @@ class Display:
 
 	def dialog(self, msg : str, btn1 : str, btn2 : str, color : tuple[int, int, int]):
 		self.draw.rectangle((0, 0, self.WIDTH, self.HEIGHT), fill=(0, 0, 0))
-		self.draw.text((0, 0), self._wrap_text(msg), font=self.font, fill=(255, 0, 0))
+		self.draw.text((0, 0), self._wrap_text(msg), font=self.font, fill=color)
 		self.showOptions(btn1, btn2)
 		self.display.image(self.image)
 
