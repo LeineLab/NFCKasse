@@ -68,11 +68,11 @@ class MakerSpaceAPI:
             if r.ok:
                 return round(float(r.json().get('balance', 0)), 2), r.json().get('oidc_sub', None) is not None
             if r.status_code == 404:
-                return None, None
-            return None, None
+                return None, False
+            return None, False
         except requests.RequestException:
             logger.exception('getCard failed')
-            return None, None
+            return None, False
 
     # ------------------------------------------------------------------ #
     # Product operations                                                   #

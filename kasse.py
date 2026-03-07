@@ -117,7 +117,7 @@ def ui():
 
 	while not cancel:
 		buzz.beep(buzz.A5, 0.15)
-		disp.message(_('msg.scan_item', balance=value), _('btn.connect') if not oidc and uid != settings.uid_guest else "", _('btn.logout'))
+		disp.message(_('msg.scan_item', balance=value), _('btn.connect') if (not oidc and uid != settings.uid_guest) else "", _('btn.logout'))
 		led.white()
 		bc = None
 		btns.resetState()
@@ -128,7 +128,7 @@ def ui():
 			scan_iteration += 1
 			pressed = btns.getPressed()
 			if pressed[0] and not oidc and uid != settings.uid_guest:
-				showConnectUri()
+				showConnectUri(uid)
 			if pressed[1]:
 				cancel = 1
 				break
