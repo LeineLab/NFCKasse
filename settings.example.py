@@ -10,3 +10,6 @@ serialport = '/dev/ttyUSB0'
 # Optional guest card UID (raw integer, or None to disable)
 uid_guest = None
 
+# Display languages. First entry is the default. If only one is listed, language switching is disabled.
+# You can write your own translations in the locales directory.
+languages = ['de', 'en']
