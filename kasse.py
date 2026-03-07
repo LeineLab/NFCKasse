@@ -89,7 +89,7 @@ def createAccount(uid : int):
 	else:
 		return False
 
-def buyProduct(uid : int, product):
+def buyProduct(uid : int, value : float, product):
 	led.yellow()
 	pname = product['name'].replace(' ', '\u00a0')
 	if product['price'] > value:
@@ -189,7 +189,7 @@ def ui():
 			bc = api.getAlias(bc)
 			product = api.getProduct(bc)
 			if product:
-				if not buyProduct(uid, product):
+				if not buyProduct(uid, value, product):
 					break
 			if product is None:
 				led.purple()
