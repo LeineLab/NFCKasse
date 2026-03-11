@@ -1,15 +1,15 @@
 # NFCKasse settings - copy to settings.py and fill in your values
 
 # MakerSpaceAPI connection
-api_url   = 'http://localhost:8000'
-api_token = ''  # Bearer token for this checkout-box device (from MakerSpaceAPI admin)
+api_url = "http://localhost:8000"
+api_token = ""  # Bearer token for this checkout-box device (from MakerSpaceAPI admin)
 
 # Serial port for barcode scanner, when using the Pis bus: /dev/ttyACM0
-serialport = '/dev/ttyUSB0'
+serialport = "/dev/ttyUSB0"
 
 # Optional guest card UID (raw integer, or None to disable)
 uid_guest = None
 
 # Display languages. First entry is the default. If only one is listed, language switching is disabled.
 # You can write your own translations in the locales directory.
-languages = ['de', 'en']
+languages = ["de", "en"]
