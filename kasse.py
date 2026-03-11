@@ -74,7 +74,7 @@ def showConnectUri(uid: int):
 def createAccount(uid: int):
     disp.info(_("msg.card_unknown"), _("btn.register"), _("btn.cancel"))
     led.red()
-    if buttonLoop() == 1:
+    if buttonLoop() == LEFT_BUTTON:
         # Verify, that the cards ID is consistent.
         # ID-/Bank-/Creditcards don't play well with the mifare ID readout.
         uid2 = None
