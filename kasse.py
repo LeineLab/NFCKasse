@@ -117,7 +117,7 @@ def buyProduct(uid: int, value: float, product):
             _("btn.buy"),
             _("btn.cancel"),
         )
-    if buttonLoop(5, 1) == LEFT_BUTTON:
+    if buttonLoop(5, LEFT_BUTTON) == LEFT_BUTTON:
         if product["price"] <= value:
             if api.buyProduct(uid, product["ean"]):
                 value, oidc = api.getCard(uid)
@@ -157,6 +157,7 @@ def ui():
     uid = None
     idle = time.time() + 30
     led.clear()
+    btns.resetState()
     while uid is None:
         uid = card.get()
         if time.time() > idle:
@@ -227,7 +228,7 @@ def ui():
             if product is None:
                 led.purple()
                 disp.error(_("msg.product_not_found"), _("btn.scan"), _("btn.logout"))
-                if buttonLoop(10, 0) != LEFT_BUTTON:
+                if buttonLoop(10, RIGHT_BUTTON) != LEFT_BUTTON:
                     return
                 """
 				# Currently not in use, as with the switch from database to MakerSpaceAPI there is currently no topup code
