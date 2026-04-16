@@ -119,7 +119,8 @@ def buyProduct(uid: int, value: float, product):
         )
     if buttonLoop(5, LEFT_BUTTON) == LEFT_BUTTON:
         if product["price"] <= value:
-            if api.buyProduct(uid, product["ean"]):
+            success, msg = api.buyProduct(uid, product["ean"])
+            if success:
                 value, oidc = api.getCard(uid)
                 led.green()
                 disp.success(
@@ -128,7 +129,7 @@ def buyProduct(uid: int, value: float, product):
                 buzz.beep(buzz.A6, 0.15)
             else:
                 led.red()
-                disp.error(_("msg.purchase_failed"), _("btn.scan"), _("btn.logout"))
+                disp.error(_("msg.purchase_failed") + "\n" + msg, _("btn.scan"), _("btn.logout"))
                 buzz.abort()
             if buttonLoop() != LEFT_BUTTON:
                 return False

@@ -151,10 +151,10 @@ class MakerSpaceAPI:
                 json={"nfc_id": uid},
                 timeout=5,
             )
-            return r.ok
+            return (r.ok, r.json().get("detail"))
         except requests.RequestException:
             logger.exception("buyProduct failed")
-            return False
+            return (False, "Request failed")
 
     def getConnectLink(self, uid):
         """Generate a short-lived OIDC linking URL for a card.
