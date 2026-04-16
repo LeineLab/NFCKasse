@@ -1,6 +1,6 @@
 [Unit]
 Description=Kassenserver
-After=network.target mariadb.service
+After=network.target
 
 [Service]
 WorkingDirectory=/opt/kasse
