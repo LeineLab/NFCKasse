@@ -93,7 +93,7 @@ class Display:
             ((self.WIDTH - font_width) / 2, self.HEIGHT - font_height - 15),
             text,
             font=self.fontsmall,
-            fill=(200 - button_color * 200, button_color * 200, 0),
+            fill=(button_color * 200, 200 - button_color * 200, 0),
         )
         self.display.image(self.image)
 
