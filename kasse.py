@@ -42,7 +42,6 @@ def _cycle_language():
 def buttonLoop(timeout: int = 20, countdown_button: int = NO_BUTTON):
     tout = time.time() + timeout
     lsecs = -1
-    btns.resetState()
     while tout > time.time():
         pressed = btns.getPressed()
         if pressed[RIGHT_BUTTON]:  # cancel
@@ -196,7 +195,6 @@ def ui():
         )
         led.white()
         bc = None
-        btns.resetState()
         timeout = time.time() + 10
         scan_iteration = 0
         while bc is None and timeout > time.time():
