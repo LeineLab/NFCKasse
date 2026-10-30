@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-from pn532pi import Pn532I2c, Pn532, pn532
+from pn532pi import Pn532I2c, Pn532
+
+import time
+
+import nfc_poller
 
 
 class NFCtag:
@@ -8,24 +12,20 @@ class NFCtag:
         self.i2c = Pn532I2c(port)
         self.nfc = Pn532(self.i2c)
         self.nfc.begin()
-        self.nfc.setPassiveActivationRetries(0xFF)
+        self.nfc.setPassiveActivationRetries(nfc_poller.ACTIVATION_RETRIES)
         self.nfc.SAMConfig()
+        self.poller = nfc_poller.NfcPoller(self.nfc)
+        self.poller.start()
 
     """Check if there is a tag available and return hash if present
 	"""
 
     def get(self):
-        success, uid = self.nfc.readPassiveTargetID(
-            pn532.PN532_MIFARE_ISO14443A_106KBPS
-        )
-        if success:
-            tag_uid = 0
-            for i in uid:
-                tag_uid <<= 8
-                tag_uid += i
-            return tag_uid
-        else:
-            return None
+        uid = self.poller.get_int()
+        if uid is None:
+            # The poller never blocks; keep callers' busy loops from spinning.
+            time.sleep(0.02)
+        return uid
 
 
 if __name__ == "__main__":
