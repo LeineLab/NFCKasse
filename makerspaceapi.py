@@ -8,6 +8,19 @@ Configure via settings.py:
 """
 
 import requests
+
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+# One shared session: HTTP keep-alive reuses the TCP/TLS connection between calls
+# instead of a full handshake per request. If the server (or nginx) closed the idle
+# connection, urllib3 reconnects: connect errors are retried for every method, read
+# errors only for idempotent ones (GET/PUT/DELETE), so a POST whose response got lost
+# is never sent twice.
+_http = requests.Session()
+_retry = Retry(total=1, connect=1, read=1, status=0, redirect=0, other=0, backoff_factor=0)
+_http.mount("http://", HTTPAdapter(max_retries=_retry))
+_http.mount("https://", HTTPAdapter(max_retries=_retry))
 import settings
 
 import logging
@@ -31,7 +44,7 @@ class MakerSpaceAPI:
 
     def ping(self):
         try:
-            r = requests.get(
+            r = _http.get(
                 f"{_base()}/products",
                 headers=_headers(),
                 timeout=3,
@@ -47,7 +60,7 @@ class MakerSpaceAPI:
     def addCard(self, uid):
         """Register a new NFC card (uid is a raw integer)."""
         try:
-            r = requests.post(
+            r = _http.post(
                 f"{_base()}/users",
                 headers=_headers(),
                 json={"id": uid},
@@ -61,7 +74,7 @@ class MakerSpaceAPI:
     def getCard(self, uid):
         """Return balance for card uid, or None if not registered."""
         try:
-            r = requests.get(
+            r = _http.get(
                 f"{_base()}/users/nfc/{uid}",
                 headers=_headers(),
                 timeout=5,
@@ -85,7 +98,7 @@ class MakerSpaceAPI:
     def getAlias(self, ean):
         """Resolve an alias EAN to the primary product EAN."""
         try:
-            r = requests.get(
+            r = _http.get(
                 f"{_base()}/products/{ean}",
                 headers=_headers(),
                 timeout=5,
@@ -99,7 +112,7 @@ class MakerSpaceAPI:
     def getProduct(self, ean):
         """Return product dict {ean, name, price, stock} or None."""
         try:
-            r = requests.get(
+            r = _http.get(
                 f"{_base()}/products/{ean}",
                 headers=_headers(),
                 timeout=5,
@@ -120,7 +133,7 @@ class MakerSpaceAPI:
     def getProducts(self):
         """Return list of all active products (sorted by category, name)."""
         try:
-            r = requests.get(
+            r = _http.get(
                 f"{_base()}/products",
                 headers=_headers(),
                 timeout=5,
@@ -145,7 +158,7 @@ class MakerSpaceAPI:
     def buyProduct(self, uid, ean):
         """Deduct product price from card, reduce stock, record transaction."""
         try:
-            r = requests.post(
+            r = _http.post(
                 f"{_base()}/products/{ean}/purchase",
                 headers=_headers(),
                 json={"nfc_id": uid},
@@ -160,7 +173,7 @@ class MakerSpaceAPI:
         """Generate a short-lived OIDC linking URL for a card.
         Returns the URL string, or None on error or if already linked (409)."""
         try:
-            r = requests.post(
+            r = _http.post(
                 f"{_base()}/users/{uid}/connect-link",
                 headers=_headers(),
                 timeout=5,
